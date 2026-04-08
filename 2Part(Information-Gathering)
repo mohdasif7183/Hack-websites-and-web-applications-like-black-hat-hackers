@@ -1,0 +1,75 @@
+information we gather:
+* Domain ownership details
+* Contact information (email, phone)
+* Domain registration details
+* IP address
+* Web server information
+* Server version
+* Operating system
+* SSL/TLS information
+* Name servers (NS records)
+* Hosting provider details
+* DNS information
+
+
+*Information Gathering by using whois : https://whois.domaintools.com/
+
+*information Gathering by using Netcraft: https://sitereport.netcraft.com/
+names of the information you can gather from Netcraft:
+* Website title
+* Description & keywords
+* Domain name
+* IP address
+* Domain registrar
+* Organization details
+* Hosting location
+* Hosting provider
+* Name servers
+* Hosting history
+* Web server (e.g., Apache/Nginx)
+* Server version
+* Operating system
+* Server-side technologies (e.g., PHP)
+* Client-side technologies (e.g., JavaScript, jQuery)
+* Web applications (e.g., WordPress, cPanel)
+* Third-party services (e.g., Google Analytics, CDN)
+* Security/spam information
+
+
+*information Gathering by using Robtex: https://robtex.com/
+names of the information you should look for in Robtex:
+* Domain name
+* Top-Level Domain (TLD)
+* IP address
+* Name servers (NS records)
+* Mail servers (MX records)
+* Hosting provider
+* DNS records (A, MX, NS, etc.)
+* Reverse DNS (domains on same IP)
+* Subdomains / related domains
+* DNS history
+* Shared hosting information (same server sites)
+* Server relationships (graphs)
+* SEO / ranking info
+* Reputation / blacklist status
+
+( NOTE )   
+Websites are hosted on web servers, which are normal computers that can contain multiple websites sharing the same IP address. This means your target website might not be alone on the server, and if you cannot find vulnerabilities in it, you can try attacking other websites hosted on the same server. If you successfully exploit one of them, you may gain access to the entire server and then navigate to your actual target website. Tools like Robtex or search engines can help identify other domains sharing the same IP, making this a useful strategy in penetration testing when the main target is secure.
+
+
+*Discovering Subdomains
+
+Subdomains are important in penetration testing because they expand the attack surface of a target by revealing additional entry points beyond the main domain. Each subdomain (like mail.example.com or admin.example.com) can host a completely different web application, including admin panels, internal tools, beta versions, or poorly secured services. These areas are often less tested and more likely to contain vulnerabilities or sensitive information. By discovering and analyzing subdomains using tools like Knockpy, Sublist3r, an attacker or tester increases the chances of finding weaknesses that can be exploited to gain access to the main website or even the entire server.
+
+https://github.com/guelfoweb/knockpy
+https://github.com/aboul3la/sublist3r
+
+
+
+*Discovering Sensitive files  We are performing directory and file discovery on a target website to find hidden or unlisted resources stored on the web server. Using a tool like {{ Dirb }}, we send multiple requests with different file and directory names from a wordlist to identify existing paths that are not visible through normal browsing. These hidden files or folders may contain sensitive information such as configuration files, passwords, or server details, which can help us further analyze and potentially exploit the target system. 
+
+*Analysing Sensitive files   we are using a tool like Dirb to discover hidden files and directories on a target website, and then analyzing them to find sensitive information. Once {{ Dirb }} reveals these paths, we should focus on identifying important files such as login pages, configuration files (e.g., config files containing database credentials), information disclosure files (like phpinfo), and special files like robots.txt that may reveal hidden directories. We should carefully look for usernames, passwords, database access details, server configurations, and any restricted or admin-related pages, as these can help us gain deeper access or plan further attacks on the target system.
+
+
+
+*Discovering about the website by using Maltego   In this step, we are using Maltego to perform advanced information gathering by mapping relationships between a target domain and its associated data using automated queries called transformers. We start with a domain and extract useful information such as subdomains, related websites, DNS records, mail servers, WHOIS details, and publicly available files or documents. While using Maltego, we should focus on identifying subdomains, email infrastructure, domain ownership details, linked services, and any exposed files (like PDFs or sensitive documents), as these can reveal hidden entry points, valuable metadata, or potential vulnerabilities that can help in further analysis or exploitation.
