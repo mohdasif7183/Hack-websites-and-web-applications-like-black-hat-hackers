@@ -190,3 +190,12 @@ In upcoming labs, we will learn how attackers exploit SQL Injection vulnerabilit
 * Delete information
 * Gain full database control
 
+
+Why SQL Injection is Dangerous
+
+SQL Injection (SQLi) is one of the most dangerous web vulnerabilities because it gives attackers direct access to the website’s database. Since databases store important information like usernames, passwords, emails, credit cards, and private user data, a single SQL Injection vulnerability can expose the entire application.
+
+Many popular websites have suffered from SQL Injection vulnerabilities because they are easy to create accidentally and difficult to secure properly. In many cases, attackers do not even need a reverse shell or PHP upload because accessing the database already gives them everything they need.
+
+An attacker can use SQL Injection to read sensitive information, modify data, create admin accounts, delete records, or sometimes even upload malicious files and gain full control over the server. This is why SQL Injection is considered one of the most critical vulnerabilities in web security.
+
