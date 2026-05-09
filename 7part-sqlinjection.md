@@ -199,3 +199,271 @@ Many popular websites have suffered from SQL Injection vulnerabilities because t
 
 An attacker can use SQL Injection to read sensitive information, modify data, create admin accounts, delete records, or sometimes even upload malicious files and gain full control over the server. This is why SQL Injection is considered one of the most critical vulnerabilities in web security.
 
+
+
+ Discovering SQL Injection Vulnerabilities
+
+To find SQL Injection vulnerabilities, testers usually browse through the website and try to “break” different pages. Any place that accepts user input such as login forms, search boxes, or URL parameters can potentially be vulnerable.
+
+One common way to test for SQL Injection is by inserting special characters like a single quote:
+
+```sql id="u0mb34"
+'
+```
+
+If the application behaves strangely or shows a database error, it may indicate that the input is being processed directly inside an SQL query.
+
+---
+
+ Testing in Mutillidae
+
+In **OWASP Mutillidae II**, first register a normal account.
+For example:
+
+* Username: `adil`
+* Password: `123456`
+
+Now try logging in again, but this time enter:
+
+* Username: `adil`
+* Password:
+
+```sql id="kpy38v"
+'
+```
+
+This produces a database error, which is very useful because it reveals part of the SQL query being executed.
+
+Usually in real-world applications, detailed database errors are hidden, but for learning purposes this helps us understand how SQL Injection works.
+
+<img width="1438" height="329" alt="Screenshot 2026-05-09 at 7 55 18 AM" src="https://github.com/user-attachments/assets/5cd919d0-7713-4004-84ec-d1c85409fdd3" />
+
+---
+
+The query becomes something like:
+
+```sql id="bbawzk"
+SELECT * FROM accounts 
+WHERE username='adil' 
+AND password=''';
+```
+
+The extra quote breaks the SQL query and causes an error.
+
+---
+
+ Bypassing Login as Admin
+
+Now suppose we want to log in as admin without knowing the password.
+
+The normal query looks like:
+
+```sql id="q8pbt6"
+SELECT * FROM accounts 
+WHERE username='admin' 
+AND password='password';
+```
+
+We can manipulate the password field using:
+
+```sql id="mlv3x7"
+12' OR 1=1#
+```
+
+The query now becomes:
+
+```sql id="73p7gi"
+SELECT * FROM accounts 
+WHERE username='admin' 
+AND password='12' OR 1=1#;
+```
+
+Since `1=1` is always true, the login condition becomes true and authentication is bypassed.
+
+<img width="1440" height="493" alt="PHP Scripts Of OWASP Top" src="https://github.com/user-attachments/assets/ecf40a16-2e31-4daf-906a-21ddc9983d5f" />
+
+
+---
+
+ Another Login Bypass Method
+
+We can also inject directly into the username field:
+
+```sql id="q8fg5m"
+admin'# 
+```
+
+The query becomes:
+
+```sql id="aq2sh2"
+SELECT * FROM accounts 
+WHERE username='admin'#' 
+AND password='';
+```
+
+Everything after `#` becomes a comment, so the password check is ignored completely.
+
+<img width="1440" height="562" alt="Screenshot 2026-05-09 at 8 08 30 AM" src="https://github.com/user-attachments/assets/41b0ada3-9502-4413-93d1-b49360f8d2b2" />
+
+
+---
+
+ SQL Injection at Security Level 1
+
+Now increase the security level from `0` to `1`.
+
+When trying the same payload directly in the browser, the request gets blocked and nothing appears in **Burp Suite**.
+
+This happens because the filtering is occurring on the **client side**.
+
+---
+
+ Client-Side Request
+
+A client-side request means the filtering happens inside the browser before the data is sent to the server.
+
+Example payload:
+
+```sql id="u25gpk"
+' OR 1=1
+```
+
+The browser detects dangerous characters like:
+
+* `'`
+* ``
+
+and blocks the request immediately.
+
+Flow:
+
+```text id="vyjlwm"
+Browser → Blocked → Server never receives request
+```
+
+---
+
+ Server-Side Request
+
+A server-side request means the data reaches the server first, and then the server checks it.
+
+Flow:
+
+```text id="jlwm7k"
+Browser → Server → Input checked
+```
+
+Server-side filtering is much stronger because attackers cannot bypass it easily using browser tricks.
+
+---
+
+ Using Burp Suite to Bypass Client-Side Filtering
+
+If we enter a normal username and password, the request successfully appears inside Burp Suite.
+
+Example:
+
+* Username: `admin`
+* Password: `aaa`
+
+<img width="1440" height="675" alt="Screenshot 2026-05-09 at 8 17 49 AM" src="https://github.com/user-attachments/assets/9565d3f7-2bc3-4b87-a2b5-dd223a6cbfb8" />
+
+
+---
+
+Since the request already bypassed the browser filter, we can now modify it manually inside Burp Suite.
+
+Change the username to:
+
+```sql id="rd4bz5"
+admin'# 
+```
+
+Then forward the request.
+
+The server processes the modified SQL query and the login is bypassed successfully.
+
+<img width="1439" height="770" alt="Screenshot 2026-05-09 at 8 18 37 AM" src="https://github.com/user-attachments/assets/59c9bdc7-96f6-4505-a949-91a05b3e1818" />
+
+
+<img width="1078" height="37" alt="Screenshot 2026-05-09 at 8 21 44 AM" src="https://github.com/user-attachments/assets/ddc9934b-8399-4e4e-b224-4b9945400548" />
+
+<img width="1416" height="429" alt="Mutillidae Born to be Hacked" src="https://github.com/user-attachments/assets/97da232c-4b5c-450b-864a-fe55f0e4a552" />
+
+---
+
+ SQL Injection – High Security Level
+
+At High security level, the same SQL Injection payload no longer works, even when using Burp Suite.
+
+Payload:
+
+```sql id="ie3rt7"
+' OR 1=1
+```
+
+Result:
+
+```text id="jlwm9x"
+Bad username or password
+```
+
+
+
+ Why the Attack Fails
+
+At low and medium levels, the application used queries like:
+
+```php id="u0a9w1"
+SELECT * FROM accounts 
+WHERE username='$username' 
+AND password='$password';
+```
+
+This directly inserted user input into the SQL query, making it vulnerable.
+
+---
+
+ What High Security Changes
+
+The high security version uses a function similar to:
+
+```php id="jlwm3z"
+mysqli_real_escape_string()
+```
+
+This function escapes or removes dangerous characters such as:
+
+* `'`
+* `"`
+* special characters
+
+So a payload like:
+
+```sql id="jlwm4v"
+admin'
+```
+
+gets treated as normal text instead of executable SQL code.
+
+The application also hardcodes quotes around the input:
+
+```php id="jlwm5n"
+WHERE username='$username'
+```
+
+Because of this:
+
+* Everything inside the quotes becomes a string
+* Injected SQL code is not executed
+
+---
+
+ Key Takeaway
+
+* Low security → vulnerable to direct SQL Injection
+* Medium security → uses weak client-side filtering
+* High security → escapes dangerous characters and blocks injection attempts
+
+This is why proper input handling and secure coding are important in web applications.
+
