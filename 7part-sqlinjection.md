@@ -576,3 +576,118 @@ This confirms that:
 
 
 If changing injected SQL statements changes the database response or produces database errors, the application is likely vulnerable to SQL Injection.
+
+
+{{ Finding the Number of Columns in SQL Injection }} 
+
+Now that we confirmed the page is vulnerable to SQL Injection, the next step is finding out how many columns are being used in the SQL query.
+
+To do that, we use the `ORDER BY` statement.
+
+We already know:
+
+```sql id="jlwm1q"
+ORDER BY 1
+```
+
+worked successfully, while:
+
+```sql id="jlwm2w"
+ORDER BY 100000
+```
+
+returned an error.
+
+So we continue testing different numbers:
+
+```sql id="jlwm3e"
+ORDER BY 5
+```
+
+✅ Works normally
+
+```sql id="jlwm4r"
+ORDER BY 6
+```
+
+❌ Returns an error
+
+This tells us the query is selecting exactly **5 columns**.
+Anything higher than 5 causes an error because that column does not exist.
+
+---
+
+ Using UNION SELECT
+
+Now that we know the number of columns, we can create our own query using `UNION SELECT`.
+
+The original query looks something like:
+
+```sql id="jlwm5t"
+SELECT * FROM accounts 
+WHERE username='adil';
+```
+
+We inject:
+
+```sql id="jlwm6y"
+' UNION SELECT 1,2,3,4,5
+```
+
+Here:
+
+* `UNION SELECT` combines our results with the original query
+* We provide 5 values because the original query has 5 columns
+* `` comments out the remaining part of the SQL query
+
+<img width="1440" height="863" alt="Screenshot 2026-05-12 at 7 58 50 AM" src="https://github.com/user-attachments/assets/04377012-ca6f-4253-9ea9-807d59dae6f8" />
+
+---
+
+When executed, the webpage displays some of the numbers like `2`, `3`, and `4`.
+
+This helps identify which columns are visible on the webpage.
+
+Example:
+
+* Column `2` appears in the **First Name** field
+* Column `3` appears in the **Surname** field
+* Column `4` appears in the **Signature** field
+
+---
+
+ Extracting Database Information
+
+Instead of displaying numbers, we can use useful SQL functions:
+
+```sql id="jlwm7u"
+' UNION SELECT 1,database(),user(),version(),5
+```
+
+This retrieves:
+
+* `database()` → current database name
+* `user()` → current database user
+* `version()` → MySQL version
+
+The results showed:
+
+* Current database: `owasp10`
+* Current user: `root@localhost`
+* MySQL version: `5.0.51`
+
+<img width="1440" height="876" alt="Mutillidae Born to be Hacked" src="https://github.com/user-attachments/assets/cbeddab5-1799-4c25-b808-7afad0bdb064" />
+
+
+---
+
+ What This Means
+
+This tells us:
+
+* The application is connected to the `owasp10` database
+* The website is using the MySQL `root` account
+* We can now start extracting tables, columns, and sensitive data from the database
+
+In real-world applications, websites usually use limited database accounts instead of the root user. This helps restrict access only to the website’s own database and improves security.
+
