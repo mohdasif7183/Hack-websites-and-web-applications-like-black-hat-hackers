@@ -1,4 +1,4 @@
- Introduction to SQL Injection
+<img width="1440" height="710" alt="Mutillidae Born to be Hacked" src="https://github.com/user-attachments/assets/cb14e3c4-94a6-4e34-a4ec-859a32304f4f" /> Introduction to SQL Injection
 
 In this lecture and the next few lectures, we will learn about a very common web vulnerability called **SQL Injection (SQLi)**.
 
@@ -267,7 +267,7 @@ AND password='password';
 We can manipulate the password field using:
 
 ```sql id="mlv3x7"
-12' OR 1=1#
+12' OR 1=1
 ```
 
 The query now becomes:
@@ -275,7 +275,7 @@ The query now becomes:
 ```sql id="73p7gi"
 SELECT * FROM accounts 
 WHERE username='admin' 
-AND password='12' OR 1=1#;
+AND password='12' OR 1=1;
 ```
 
 Since `1=1` is always true, the login condition becomes true and authentication is bypassed.
@@ -290,18 +290,18 @@ Since `1=1` is always true, the login condition becomes true and authentication 
 We can also inject directly into the username field:
 
 ```sql id="q8fg5m"
-admin'# 
+admin' 
 ```
 
 The query becomes:
 
 ```sql id="aq2sh2"
 SELECT * FROM accounts 
-WHERE username='admin'#' 
+WHERE username='admin'' 
 AND password='';
 ```
 
-Everything after `#` becomes a comment, so the password check is ignored completely.
+Everything after `` becomes a comment, so the password check is ignored completely.
 
 <img width="1440" height="562" alt="Screenshot 2026-05-09 at 8 08 30 AM" src="https://github.com/user-attachments/assets/41b0ada3-9502-4413-93d1-b49360f8d2b2" />
 
@@ -376,7 +376,7 @@ Since the request already bypassed the browser filter, we can now modify it manu
 Change the username to:
 
 ```sql id="rd4bz5"
-admin'# 
+admin' 
 ```
 
 Then forward the request.
@@ -467,3 +467,112 @@ Because of this:
 
 This is why proper input handling and secure coding are important in web applications.
 
+
+
+{{ Discovering SQL Injection Through URL Parameters (GET Method) }}
+
+In this example, we are testing for an SQL Injection vulnerability on a page that displays user information.
+
+Previously, the injection was performed through a login form using the **POST** method. This time, the application passes user input directly through the URL using the **GET** method.
+
+Example:
+
+```text id="4zjlwm"
+userinfo.php?username=adil&password=123456
+```
+
+Here, the username and password are visible in the URL, which means we can directly modify them and test for SQL Injection.
+
+<img width="1440" height="689" alt="Screenshot 2026-05-12 at 7 41 49 AM" src="https://github.com/user-attachments/assets/cca75684-d097-4382-9e63-452cc2bf8357" />
+
+<img width="1428" height="705" alt="Mutillidae Born to be Hacked" src="https://github.com/user-attachments/assets/151400be-7245-4633-8610-a933ec5f94be" />
+
+---
+
+Example full URL:
+
+```text id="jlwm1a"
+http://172.16.219.181/mutillidae/index.php?page=user-info.php&username=adil&password=123456&user-info-php-submit-button=View+Account+Details
+```
+
+During penetration testing, whenever you see parameters like:
+
+```text id="jlwm2b"
+page.php?id=2
+```
+
+or
+
+```text id="jlwm3c"
+news.php?id=5
+```
+
+you should always test them because the application may be using those values directly inside SQL queries.
+
+The backend query in this case is similar to:
+
+```sql id="jlwm4d"
+SELECT * FROM accounts 
+WHERE username='adil' 
+AND password='123456';
+```
+
+---
+
+Testing with ORDER BY
+
+To test the vulnerability, SQL code is injected into the username parameter using an `ORDER BY` statement.
+
+Payload:
+
+```sql id="jlwm5e"
+adil' ORDER BY 1
+```
+
+What happens here:
+
+* `'` closes the original username string
+* `ORDER BY 1` sorts results using the first column
+* `` comments out the rest of the query
+
+The final SQL query becomes:
+
+```sql id="jlwm6f"
+SELECT * FROM accounts 
+WHERE username='adil' ORDER BY 1'
+AND password='123456';
+```
+
+Since everything after `` is ignored, the injected SQL executes successfully.
+
+If the page loads normally, it means the SQL query accepted our injection.
+
+<img width="1440" height="710" alt="Mutillidae Born to be Hacked" src="https://github.com/user-attachments/assets/66ca7036-3d25-4d10-a4a2-9653855d9455" />
+
+---
+
+ Confirming the Vulnerability
+
+Next, a very large column number is tested:
+
+```sql id="jlwm7g"
+adil' ORDER BY 100000
+```
+
+Because the table does not have 100000 columns, the database returns an error such as:
+
+```text id="jlwm8h"
+Unknown column '100000'
+```
+
+This confirms that:
+
+* Our SQL code is being executed
+* The query is being modified successfully
+* The application is vulnerable to SQL Injection
+
+<img width="1438" height="880" alt="Screenshot 2026-05-12 at 7 48 41 AM" src="https://github.com/user-attachments/assets/75059b04-c102-4119-b6dd-d975b91781ac" />
+
+
+
+If changing injected SQL statements changes the database response or produces database errors, the application is likely vulnerable to SQL Injection.
