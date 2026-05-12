@@ -691,3 +691,76 @@ This tells us:
 
 In real-world applications, websites usually use limited database accounts instead of the root user. This helps restrict access only to the website’s own database and improves security.
 
+
+{{ Discovering Database Tables with SQL Injection }}
+
+Now that we know the current database is called `owasp10`, the next step is to discover the tables inside that database.
+
+To do this, we use `UNION SELECT` again, but this time we query MySQL’s internal database called `information_schema`.
+
+`information_schema` is a default MySQL database that stores metadata about:
+
+* databases
+* tables
+* columns
+
+The injection used is:
+
+```sql id="jlwm1m"
+adil' UNION SELECT null,table_name,null,null,null 
+FROM information_schema.tables %23
+```
+
+Here:
+
+* `table_name` retrieves the table names
+* `information_schema.tables` contains information about all tables
+* `NULL` is used for unused columns because the original query has 5 columns
+* `%23` is the URL-encoded version of `` used for comments
+
+<img width="1440" height="900" alt="Screenshot 2026-05-12 at 8 08 27 AM" src="https://github.com/user-attachments/assets/2bdfa630-c0e9-4aeb-a4d0-c52e54ebefa1" />
+
+---
+
+When executed, the page returns many table names — around 237 results.
+
+This happens because the database user is `root`, which has permission to view tables from multiple databases on the server.
+
+In real-world applications, websites usually use limited database accounts, so attackers normally only see tables belonging to the current database.
+
+---
+
+ Filtering Tables from the Current Database
+
+To display only tables from the `owasp10` database, we add a `WHERE` clause:
+
+```sql id="jlwm2n"
+adil' UNION SELECT null,table_name,null,null,null 
+FROM information_schema.tables 
+WHERE table_schema='owasp10'%23
+```
+
+Now the results only show tables belonging to the `owasp10` database, such as:
+
+* `accounts`
+* `blogs_table`
+* `credit_cards`
+* `hitlog`
+* `pentest_tools`
+
+<img width="1440" height="836" alt="Screenshot 2026-05-12 at 8 20 57 AM" src="https://github.com/user-attachments/assets/fa0043ed-7e91-490b-bf4a-78924d6faae3" />
+
+---
+
+ What We Achieved
+
+At this point, we successfully enumerated the database structure and discovered the available tables inside the target database.
+
+These tables can later be targeted to extract sensitive information such as:
+
+* usernames
+* passwords
+* credit card data
+* application information
+
+
