@@ -854,3 +854,143 @@ The general process followed during SQL Injection testing is:
 4. Enumerate column names
 5. Extract sensitive data directly from the database
 
+--
+
+
+{{  Blind SQL Injection  }}
+
+A Blind SQL Injection is a type of SQL Injection vulnerability where the website does **not** display database errors directly.
+
+In a normal SQL Injection, entering something like:
+
+```sql id="jlwm1b"
+'
+```
+
+may immediately produce an SQL error on the page, confirming the vulnerability.
+
+But in a Blind SQL Injection:
+
+* no SQL errors are displayed
+* the page may still be vulnerable
+* we detect it by observing how the page behaves
+
+Instead of relying on errors, we inject:
+
+* a **true** condition
+* and a **false** condition
+
+Then we compare the responses.
+
+---
+
+ Testing with True and False Conditions
+
+Suppose the normal request is:
+
+```text id="jlwm2c"
+id=1
+```
+
+The page displays valid user information.
+
+Now inject a true condition:
+
+```sql id="jlwm3d"
+1' AND 1=1
+```
+
+Since `1=1` is true, the query remains valid and the page still behaves normally.
+
+---
+
+<img width="1437" height="597" alt="Screenshot 2026-05-18 at 10 27 25 AM" src="https://github.com/user-attachments/assets/3d74b848-ae68-4608-9359-7770ec93426c" />
+
+<img width="1439" height="715" alt="Screenshot 2026-05-18 at 10 29 56 AM" src="https://github.com/user-attachments/assets/a467be25-c009-4760-8886-d6b1387a4353" />
+
+
+
+---
+
+Next, inject a false condition:
+
+```sql id="jlwm4e"
+1' AND 1=0
+```
+
+Because `1=0` is false, the query returns no matching results, so the page behaves differently or becomes blank.
+
+<img width="1440" height="417" alt="Screenshot 2026-05-18 at 10 30 20 AM" src="https://github.com/user-attachments/assets/fcc1c38c-6131-4935-8a5a-eb5fabd141d9" />
+
+
+---
+
+Even though no SQL error is shown, the difference in behavior confirms that the SQL query is being manipulated.
+
+---
+
+ Using ORDER BY in Blind SQL Injection
+
+Another common testing method uses `ORDER BY`.
+
+Example that works:
+
+```sql id="jlwm5f"
+1' ORDER BY 1
+```
+
+This works because column `1` exists.
+
+Now test a very large column number:
+
+```sql id="jlwm6g"
+1' ORDER BY 10000
+```
+
+Since column `10000` does not exist, the page behaves abnormally.
+
+This again confirms the presence of a Blind SQL Injection vulnerability.
+
+
+---
+
+ Exploiting Blind SQL Injection
+
+Once the vulnerability is confirmed, exploitation is almost the same as normal SQL Injection. as we check that by using order by 2 it give you answer on the screen but when you order by 3 in the query no response on the page that means this has 2 columns so we can use the query union select 1,2 to find the table names 
+
+Example:
+
+```sql id="jlwm7h"
+1' UNION SELECT 1,2
+```
+
+<img width="1440" height="537" alt="Screenshot 2026-05-18 at 10 31 38 AM" src="https://github.com/user-attachments/assets/e44d8776-5bef-47f0-b967-f37a0ef1a05a" />
+
+
+---
+
+Or retrieving table names:
+
+```sql id="jlwm8i"
+1' UNION SELECT table_name,NULL 
+FROM information_schema.tables
+```
+
+<img width="1439" height="857" alt="Screenshot 2026-05-18 at 10 34 43 AM" src="https://github.com/user-attachments/assets/9252d171-eb5f-4f50-a900-6f46726019d0" />
+
+---
+
+ Difference Between Normal and Blind SQL Injection
+
+| Normal SQL Injection           | Blind SQL Injection                     |
+| ------------------------------ | --------------------------------------- |
+| Shows database errors directly | Does not show SQL errors                |
+| Easier to identify             | Requires observing page behavior        |
+| Errors confirm injection       | True/false conditions confirm injection |
+
+---
+
+ Key Takeaway
+
+Experienced penetration testers usually test applications as if they are blind from the beginning instead of relying only on visible SQL errors. Even if no database error appears, differences in page behavior can still reveal SQL Injection vulnerabilities.
+
