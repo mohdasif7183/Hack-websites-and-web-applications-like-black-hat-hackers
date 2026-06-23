@@ -1988,9 +1988,6 @@ Once the file was accessed through the vulnerable page, a connection was receive
  Attackers often combine multiple weaknesses to achieve a greater impact.
  SQL Injection can sometimes allow file creation, depending on database permissions.
  Local File Inclusion can allow access to files stored outside the web root.
- Proper file permissions, secure coding practices, and vulnerability remediation are essential to prevent attack chains.
 
-This exercise highlights the importance of addressing all vulnerabilities, even those that may appear low risk when evaluated individually. When combined, seemingly minor weaknesses can create a significantly more serious security exposure.
 
-This version is suitable for a GitHub project report, lab write-up, or penetration testing documentation.
 
