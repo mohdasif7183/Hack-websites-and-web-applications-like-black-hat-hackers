@@ -618,3 +618,173 @@ Because the payload is permanently stored until removed, Stored XSS is generally
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+ Exercise: Exploiting Stored Cross-Site Scripting (XSS) – Medium Security (DVWA)
+
+ Objective
+
+In this exercise, we tested whether Stored Cross-Site Scripting (XSS) could still be exploited when DVWA is configured to Medium security. We also demonstrated two different payloads, including one that bypasses quote filtering by using JavaScript character codes.
+
+---
+
+ Step 1: Reset the Database
+
+Since Stored XSS saves malicious input into the database, we first cleared all previous entries.
+
+ Log in to DVWA
+ Navigate to Setup
+ Click Reset Database
+
+This removes all stored guestbook entries so we can begin with a clean environment.
+
+
+---
+
+ Step 2: Change Security Level
+
+Navigate to:
+
+DVWA Security → Medium → Submit
+
+This enables the Medium security protections before testing Stored XSS.
+
+
+---
+
+ Step 3: Open the Stored XSS Page
+
+Navigate to:
+
+DVWA → XSS (Stored)
+
+At Medium security, notice that:
+
+ The Message field is filtered.
+ The Name field is limited to 10 characters.
+
+Since our payload is longer than 10 characters, we first bypass the client-side restriction.
+
+---
+
+ Step 4: Remove the Character Limit
+
+1. Right-click inside the Name field.
+2. Select Inspect.
+3. Locate:
+
+```html
+maxlength="10"
+```
+
+4. Change it to:
+
+```html
+maxlength="100"
+```
+
+This only modifies the browser locally and allows us to enter a longer payload.
+
+
+
+---
+
+ Step 5: Inject the First Payload
+
+Enter the following payload into the Name field:
+
+```html
+<ScRiPt>alert('XSS')</ScRiPt>
+```
+
+Enter any text in the Message field and click Sign Guestbook.
+
+The mixed capitalization (`ScRiPt`) bypasses the simple blacklist filter used by the application.
+
+<img width="1434" height="842" alt="Screenshot 2026-07-14 at 10 02 42 PM" src="https://github.com/user-attachments/assets/e082cbe7-d1af-48f0-ba9b-26886e8fe845" />
+
+
+---
+
+ Step 6: Verify the Stored XSS
+
+Refresh the page or revisit the Stored XSS page.
+
+The browser executes the stored JavaScript automatically, displaying the alert box.
+
+
+---
+
+ Bypassing Quote Filters Using Character Codes
+
+Some applications filter or remove quotation marks (`'` or `"`), causing normal payloads to fail.
+
+Instead of writing the string directly, JavaScript can recreate it using character codes.
+
+---
+
+ Step 7: Generate Character Codes
+
+Convert the text:
+
+```
+XSS2
+```
+
+into JavaScript character codes.
+
+Example:
+
+```
+88,83,83,50
+```
+<img width="1436" height="826" alt="Screenshot 2026-07-14 at 10 14 27 PM" src="https://github.com/user-attachments/assets/ee417a82-4c9a-43d1-a06b-277419db1334" />
+
+---
+
+ Step 8: Inject the Second Payload
+
+Submit the following payload in the Name field:
+
+```html
+<ScRiPt>alert(String.fromCharCode(88,83,83,50))</ScRiPt>
+```
+
+After increasing the `maxlength` value again, submit the payload.
+
+
+---
+
+ Step 9: Observe the Result
+
+When the Stored XSS page loads, JavaScript reconstructs the string using:
+
+```javascript
+String.fromCharCode(88,83,83,50)
+```
+
+The alert displays:
+
+```
+XSS2
+```
+
+without using quotation marks inside the payload.
+
+<img width="1440" height="543" alt="Screenshot 2026-07-14 at 10 05 44 PM" src="https://github.com/user-attachments/assets/4ea08e37-f4ff-46ac-93cb-4c970919d1ad" />
+
+
+<img width="1440" height="821" alt="Screenshot 2026-07-14 at 10 15 11 PM" src="https://github.com/user-attachments/assets/7c8ffdee-a3c1-41fa-83aa-623cba99140c" />
+
+
+---
+
+ Key Takeaways
+
+ Stored XSS saves malicious JavaScript inside the application's database.
+ Every visitor who loads the affected page automatically executes the stored script.
+ Client-side restrictions such as `maxlength` can be bypassed using browser developer tools.
+ Mixed capitalization (e.g., `<ScRiPt>`) may bypass simple blacklist-based filters.
+ `String.fromCharCode()` can reconstruct strings without using quotation marks, helping bypass quote-filtering mechanisms.
+ Stored XSS is generally more dangerous than Reflected XSS because the payload remains on the server until it is removed.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
