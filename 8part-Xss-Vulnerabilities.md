@@ -353,5 +353,165 @@ was blocked because the application removed the `<script>` tags.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+ JavaScript Injection (XSS) – Understanding the Context
+
+In this exercise, we examined another example of Cross-Site Scripting (XSS) to understand that XSS payloads often need to be adapted based on how a web application handles user input. Unlike previous examples where we injected an entire `<script>` tag, this application already placed user input inside an existing JavaScript block.
+
+---
+
+ Navigating to the Vulnerable Page
+
+We logged into OWASP Mutillidae II and navigated to:
+
+OWASP 2013 → JavaScript Injection → Password Generator
+
+<img width="1440" height="817" alt="Screenshot 2026-07-14 at 9 36 28 PM" src="https://github.com/user-attachments/assets/74d80db4-9a8b-439a-8119-6badf9d8fdf1" />
 
 
+The page generates a random password for the username supplied through the URL.
+
+For example:
+
+```text
+http://<target>/mutillidae/index.php?page=password-generator.php&username=anonymous
+```
+
+Changing the username parameter immediately changes the text displayed on the page.
+
+For example:
+
+```text
+username=Adil
+```
+
+The page displays:
+
+```text
+This password is for Adil
+```
+
+Since the username is reflected back into the page, this indicates a possible XSS injection point.
+
+<img width="1440" height="819" alt="Screenshot 2026-07-14 at 9 36 49 PM" src="https://github.com/user-attachments/assets/80903abb-0863-4f0d-9e65-036922d90c7f" />
+
+<img width="1440" height="859" alt="Screenshot 2026-07-14 at 9 37 15 PM" src="https://github.com/user-attachments/assets/0683a41b-be23-4eaf-86c6-bf61c69b456c" />
+
+---
+
+ Testing a Standard XSS Payload
+
+We first tested the same payload used in previous exercises:
+
+```html
+<script>alert('XSS')</script>
+```
+
+Unlike the earlier reflected XSS example, no alert box appeared.
+
+However, the webpage displayed broken output, indicating that our input had affected the page's JavaScript.
+
+
+---
+
+ Inspecting the Source Code
+
+To understand why the payload failed, we inspected the page source using Inspect Element.
+
+The source code revealed that our input was already being inserted inside an existing JavaScript statement similar to:
+
+```javascript
+document.getElementById("output").innerHTML = "This password is for 'USER_INPUT'";
+```
+
+Our payload was inserted directly between the quotation marks.
+
+Because the application already surrounded our input with JavaScript code, adding another `<script>` tag broke the script instead of executing it.
+
+<img width="1440" height="817" alt="Screenshot 2026-07-14 at 9 37 53 PM" src="https://github.com/user-attachments/assets/a585c496-d4a5-4b8d-bdfe-98fbd17b15e6" />
+
+---
+
+ Crafting a New Payload
+
+Since the application already places our input inside a JavaScript string, we no longer need to inject `<script>` tags.
+
+Instead, we:
+
+1. Closed the existing quotation mark.
+2. Terminated the current JavaScript statement with a semicolon.
+3. Executed our own JavaScript.
+4. Commented out the remaining original code.
+
+Payload used:
+
+```javascript
+';alert('XSS');//
+```
+
+This payload works as follows:
+
+ `'` closes the original string.
+ `;` ends the original JavaScript statement.
+ `alert('XSS');` executes our own JavaScript.
+ `//` comments out the remaining code so the original script does not generate a syntax error.
+
+---
+
+ Executing the Payload
+
+We entered the payload into the username parameter:
+
+```javascript
+';alert('XSS');//
+```
+
+After clicking Generate Password, the browser displayed the JavaScript alert.
+
+This confirms that our injected JavaScript was successfully executed.
+
+<img width="1432" height="862" alt="Screenshot 2026-07-14 at 9 43 06 PM" src="https://github.com/user-attachments/assets/96c5baf6-2f85-4559-a66e-4681a29c3a57" />
+
+
+---
+
+ Understanding Why the Payload Works
+
+Originally, the application generated JavaScript similar to:
+
+```javascript
+document.getElementById("output").innerHTML = "This password is for USER_INPUT";
+```
+
+After injecting our payload, the JavaScript became:
+
+```javascript
+document.getElementById("output").innerHTML = "This password is for ";
+alert('XSS');
+//";
+```
+
+The browser executes the `alert('XSS')` statement, while the remainder of the original line is ignored because it has been commented out.
+
+---
+
+ Key Takeaways
+
+ XSS payloads often need to be adapted depending on how user input is inserted into the page.
+ Not every application requires injecting an entire `<script>` tag.
+ Inspecting the page source helps determine whether the input is reflected inside:
+
+   HTML
+   JavaScript
+   HTML attributes
+   Existing JavaScript strings
+ In this example, the application already embedded user input inside JavaScript, so we injected JavaScript directly instead of creating a new `<script>` block.
+ The payload used in this exercise was:
+
+```javascript
+';alert('XSS');//
+```
+
+ This technique demonstrates why understanding the application's source code is essential when testing for Cross-Site Scripting vulnerabilities.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
