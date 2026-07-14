@@ -515,3 +515,106 @@ The browser executes the `alert('XSS')` statement, while the remainder of the or
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ Stored Cross-Site Scripting (Stored XSS)
+
+In this exercise, we tested a Stored Cross-Site Scripting (Stored XSS) vulnerability in DVWA. Unlike Reflected XSS, where the victim must open a specially crafted URL, a Stored XSS payload is saved by the application (typically in a database). Every user who visits the affected page automatically executes the injected JavaScript.
+
+---
+
+ Navigating to the Vulnerable Page
+
+We logged into DVWA and navigated to:
+
+DVWA → XSS (Stored) Make sure that the security is set to low on both machines 
+
+The page contains a guestbook where users can submit:
+
+ Name
+ Message
+
+Initially, we entered normal values to observe the application's behavior.
+
+Example:
+
+Name
+
+```text
+Adil
+```
+
+Message
+
+```text
+Hello everyone!
+```
+
+After clicking Sign Guestbook, the message was successfully added to the guestbook.
+
+<img width="1282" height="714" alt="Screenshot 2026-07-14 at 9 50 29 PM" src="https://github.com/user-attachments/assets/8bbe92f3-acb9-4815-a717-0ec345c7d5f4" />
+
+
+---
+
+ Testing for Stored XSS
+
+Next, we attempted to inject JavaScript into the Message field.
+
+Name
+
+```text
+Adil
+```
+
+Message
+
+```html
+<script>alert('XSS')</script>
+```
+
+We then clicked Sign Guestbook.
+
+Immediately after submitting the message, the browser displayed an alert box, confirming that our JavaScript had been executed.
+
+<img width="1431" height="800" alt="Screenshot 2026-07-14 at 9 51 34 PM" src="https://github.com/user-attachments/assets/822a4e33-9e06-48be-bf1f-280d97ab2bfe" />
+
+
+<img width="1437" height="809" alt="Screenshot 2026-07-14 at 9 52 25 PM" src="https://github.com/user-attachments/assets/2606af98-6880-41f3-8ea3-96d963ec80cf" />
+
+---
+
+ Verifying the Stored Payload
+
+To demonstrate that the payload had been permanently stored, we opened the guestbook from another browser session (or another machine).
+
+When the guestbook page loaded, the alert box appeared automatically without requiring any additional interaction.
+
+This confirmed that:
+
+ The payload had been stored in the application's database.
+ Every visitor viewing the guestbook executed the injected JavaScript automatically.
+
+<img width="1402" height="831" alt="Screenshot 2026-07-14 at 9 50 52 PM" src="https://github.com/user-attachments/assets/ab892667-c589-4a1d-8446-86ef9e45edf1" />
+
+
+<img width="1435" height="460" alt="Screenshot 2026-07-14 at 9 52 44 PM" src="https://github.com/user-attachments/assets/2e498306-6eab-46d2-afa9-72548a963d63" />
+
+
+---
+
+ Understanding Stored XSS
+
+Unlike Reflected XSS, Stored XSS does not require the attacker to send a malicious link.
+
+The attack flow is:
+
+1. The attacker submits malicious JavaScript to a vulnerable page.
+2. The application stores the payload in its database.
+3. Another user visits the affected page.
+4. The application retrieves the stored content.
+5. The victim's browser executes the JavaScript automatically.
+
+Because the payload is permanently stored until removed, Stored XSS is generally considered more dangerous than Reflected XSS.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
