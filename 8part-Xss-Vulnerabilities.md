@@ -1,26 +1,26 @@
 Cross-Site Scripting (XSS)
 
-In this section, we begin exploring **Cross-Site Scripting (XSS)**, one of the most common web application vulnerabilities. Unlike SQL Injection, which targets the database or server, **XSS targets the users of the application** by injecting malicious JavaScript into web pages.
+In this section, we begin exploring Cross-Site Scripting (XSS), one of the most common web application vulnerabilities. Unlike SQL Injection, which targets the database or server, XSS targets the users of the application by injecting malicious JavaScript into web pages.
 
  What is Cross-Site Scripting (XSS)?
 
-Cross-Site Scripting (XSS) is a vulnerability that allows an attacker to inject **JavaScript code** into a web page. When another user visits the affected page, the injected JavaScript is executed by **their web browser**.
+Cross-Site Scripting (XSS) is a vulnerability that allows an attacker to inject JavaScript code into a web page. When another user visits the affected page, the injected JavaScript is executed by their web browser.
 
-Unlike server-side vulnerabilities, JavaScript is a **client-side scripting language**, meaning the code runs on the **victim's browser**, not on the web server.
+Unlike server-side vulnerabilities, JavaScript is a client-side scripting language, meaning the code runs on the victim's browser, not on the web server.
 
 As a result:
 
-* The web server simply delivers the page containing the malicious JavaScript.
-* The victim's browser executes the JavaScript automatically.
-* Any actions performed by the script happen in the victim's browser under their current session.
+ The web server simply delivers the page containing the malicious JavaScript.
+ The victim's browser executes the JavaScript automatically.
+ Any actions performed by the script happen in the victim's browser under their current session.
 
-> **Important:** Even if the injected JavaScript attempts to establish a reverse shell or perform other actions, those actions execute from the **victim's computer**, **not from the web server**.
+> Important: Even if the injected JavaScript attempts to establish a reverse shell or perform other actions, those actions execute from the victim's computer, not from the web server.
 
 ---
 
  Types of Cross-Site Scripting (XSS)
 
-There are **three main types of XSS vulnerabilities**:
+There are three main types of XSS vulnerabilities:
 
  1. Stored (Persistent) XSS
 
@@ -28,19 +28,19 @@ Stored XSS occurs when the malicious JavaScript is permanently stored by the web
 
 Examples include:
 
-* Comment sections
-* Guestbooks
-* Forums
-* User profiles
-* Message boards
+ Comment sections
+ Guestbooks
+ Forums
+ User profiles
+ Message boards
 
 When any user visits the affected page, the stored JavaScript is automatically executed in their browser.
 
-**Characteristics:**
+Characteristics:
 
-* Payload is stored on the server.
-* Executes every time the vulnerable page is viewed.
-* Can affect multiple users.
+ Payload is stored on the server.
+ Executes every time the vulnerable page is viewed.
+ Can affect multiple users.
 
 ---
 
@@ -48,7 +48,7 @@ When any user visits the affected page, the stored JavaScript is automatically e
 
 Reflected XSS occurs when the malicious script is included in a specially crafted URL or request.
 
-The payload is **not stored** on the server.
+The payload is not stored on the server.
 
 Instead:
 
@@ -57,11 +57,11 @@ Instead:
 3. The application reflects the input back into the webpage.
 4. The browser executes the injected JavaScript.
 
-**Characteristics:**
+Characteristics:
 
-* Not stored in the database.
-* Requires user interaction.
-* Commonly delivered through phishing emails or malicious links.
+ Not stored in the database.
+ Requires user interaction.
+ Commonly delivered through phishing emails or malicious links.
 
 ---
 
@@ -71,26 +71,26 @@ DOM-Based XSS occurs entirely inside the user's browser.
 
 Instead of the web server processing the malicious input, JavaScript running in the browser updates the page using data from sources such as:
 
-* URL parameters
-* URL fragments (``)
-* Client-side JavaScript variables
+ URL parameters
+ URL fragments (``)
+ Client-side JavaScript variables
 
 Since the payload never reaches the server, traditional server-side filtering may not detect it.
 
-This type of XSS commonly appears in modern websites that dynamically update content **without refreshing the page**.
+This type of XSS commonly appears in modern websites that dynamically update content without refreshing the page.
 
 Examples include:
 
-* Live search suggestions
-* Dynamic page updates
-* Single Page Applications (SPAs)
-* Client-side rendering using JavaScript
+ Live search suggestions
+ Dynamic page updates
+ Single Page Applications (SPAs)
+ Client-side rendering using JavaScript
 
-**Characteristics:**
+Characteristics:
 
-* Executes entirely in the browser.
-* No communication with the server is required after the page loads.
-* Can bypass server-side validation because the payload is never processed by the server.
+ Executes entirely in the browser.
+ No communication with the server is required after the page loads.
+ Can bypass server-side validation because the payload is never processed by the server.
 
 ---
 
@@ -112,16 +112,16 @@ The flow is:
 
  Discovering Reflected Cross-Site Scripting (XSS)
 
-In this exercise, we tested a web application for a **Reflected Cross-Site Scripting (XSS)** vulnerability. Similar to SQL Injection testing, we inspected user input fields and URL parameters to determine whether user-supplied data could be executed as JavaScript.
+In this exercise, we tested a web application for a Reflected Cross-Site Scripting (XSS) vulnerability. Similar to SQL Injection testing, we inspected user input fields and URL parameters to determine whether user-supplied data could be executed as JavaScript.
 
  Identifying Potential Injection Points
 
 During reconnaissance, we looked for locations where user input is reflected back to the browser, such as:
 
-* Text input fields
-* Search boxes
-* Login forms
-* URL parameters (GET requests)
+ Text input fields
+ Search boxes
+ Login forms
+ URL parameters (GET requests)
 
 For example, the application accepts a parameter similar to:
 
@@ -129,7 +129,7 @@ For example, the application accepts a parameter similar to:
 http://<target>/vulnerabilities/xss_r/?name=Adil
 ```
 
-Since the application reflects the value of the **name** parameter back to the webpage, it becomes a potential XSS injection point.
+Since the application reflects the value of the name parameter back to the webpage, it becomes a potential XSS injection point.
 
 ---
 
@@ -137,7 +137,7 @@ Since the application reflects the value of the **name** parameter back to the w
 
 We navigated to:
 
-**DVWA → XSS (Reflected)**
+DVWA → XSS (Reflected)
 
 The page contains a text field asking for a user's name.
 
@@ -147,7 +147,7 @@ Instead of entering normal text, we supplied the following JavaScript payload:
 <script>alert('XSS')</script>
 ```
 
-After clicking **Submit**, the browser immediately displayed an alert dialog containing **XSS**.
+After clicking Submit, the browser immediately displayed an alert dialog containing XSS.
 
 This confirms that the application executed our JavaScript instead of treating it as plain text.
 
@@ -159,7 +159,7 @@ This confirms that the application executed our JavaScript instead of treating i
 
  Testing Through the URL
 
-Since the application uses the **GET** method, the input also appears in the URL.
+Since the application uses the GET method, the input also appears in the URL.
 
 The URL becomes similar to:
 
@@ -180,7 +180,7 @@ This demonstrates that the payload can be delivered through a specially crafted 
 
  Reflected XSS Attack Scenario
 
-Unlike Stored XSS, the payload is **not saved** by the application.
+Unlike Stored XSS, the payload is not saved by the application.
 
 Instead:
 
@@ -190,15 +190,15 @@ Instead:
 4. The web application reflects the input back into the page.
 5. The victim's browser executes the injected JavaScript.
 
-Because the payload is reflected from the request and not stored on the server, this is classified as **Reflected XSS**.
+Because the payload is reflected from the request and not stored on the server, this is classified as Reflected XSS.
 
 ---
 
  Key Takeaways
 
-* Reflected XSS occurs when user input is immediately returned by the application without proper sanitization.
-* Both **text input fields** and **URL parameters** should be tested for XSS vulnerabilities.
-* A simple payload such as:
+ Reflected XSS occurs when user input is immediately returned by the application without proper sanitization.
+ Both text input fields and URL parameters should be tested for XSS vulnerabilities.
+ A simple payload such as:
 
 ```html
 <script>alert('XSS')</script>
@@ -206,7 +206,152 @@ Because the payload is reflected from the request and not stored on the server, 
 
 can be used to verify whether JavaScript execution is possible.
 
-* If the browser executes the script, the application is vulnerable to Reflected XSS.
-* Unlike Stored XSS, the payload is **not stored** on the server and only executes when a victim opens the malicious URL.
-* In a real attack, an attacker would typically send the crafted URL to a victim through phishing or another social engineering technique, causing the victim's browser to execute the malicious JavaScript.
+ If the browser executes the script, the application is vulnerable to Reflected XSS.
+ Unlike Stored XSS, the payload is not stored on the server and only executes when a victim opens the malicious URL.
+ In a real attack, an attacker would typically send the crafted URL to a victim through phishing or another social engineering technique, causing the victim's browser to execute the malicious JavaScript.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+ Reflected XSS – Medium Security (DVWA)
+
+In this exercise, we tested the Reflected XSS vulnerability in DVWA after increasing the security level from Low to Medium. The objective was to determine how the application's input filtering affected our previously successful XSS payload.
+
+---
+
+ Changing the Security Level
+
+First, we navigated to:
+
+DVWA → DVWA Security
+
+and changed the security level from Low to Medium.
+
+After saving the changes, we returned to:
+
+DVWA → XSS (Reflected)
+
+
+---
+
+ Testing the Previous Payload
+
+We first tested the same payload that successfully executed at the Low security level:
+
+```html
+<script>alert('XSS')</script>
+```
+
+Instead of displaying the JavaScript alert, the application simply displayed the text:
+
+```text
+alert('XSS')
+```
+
+No JavaScript was executed.
+
+<img width="1433" height="814" alt="Screenshot 2026-07-14 at 9 17 12 PM" src="https://github.com/user-attachments/assets/fd05e399-057d-4f3d-8386-e681680eae00" />
+
+<img width="1435" height="801" alt="Screenshot 2026-07-14 at 9 26 18 PM" src="https://github.com/user-attachments/assets/0cd11db4-8e4a-43e2-b919-c46586c01775" />
+
+---
+
+ Inspecting the Source Code
+
+To understand why the payload failed, we right-clicked the page and selected Inspect.
+
+Looking at the HTML source, we observed that the application had removed the `<script>` and `</script>` tags before rendering the page.
+
+Instead of:
+
+```html
+Hello <script>alert('XSS')</script>
+```
+
+the page contained only:
+
+```html
+Hello alert('XSS')
+```
+
+Since the JavaScript was no longer enclosed within `<script>` tags, the browser treated it as plain text instead of executable code.
+
+This indicated that the application was filtering the word script from the user input.
+
+
+
+---
+
+ Bypassing the Filter
+
+The filtering mechanism only removed the exact lowercase word script.
+
+To test whether the filter was case-sensitive, we modified the payload by changing the capitalization of the tag.
+
+Payload used:
+
+```html
+<ScRiPt>alert('XSS')</ScRiPt>
+```
+
+After submitting the modified payload, the alert box appeared successfully.
+
+This confirmed that the application's filter was case-sensitive, allowing us to bypass it by changing the capitalization of the tag.
+
+<img width="1435" height="747" alt="Screenshot 2026-07-14 at 9 18 52 PM" src="https://github.com/user-attachments/assets/8407b1d8-efaf-4975-8ed8-267b306f76cc" />
+
+
+<img width="1440" height="741" alt="Screenshot 2026-07-14 at 9 19 03 PM" src="https://github.com/user-attachments/assets/28be4c5a-e74e-4cb4-b5e2-ecde46217ae4" />
+
+
+---
+
+ Alternative XSS Payloads
+
+Simple keyword filtering is often insufficient to prevent Cross-Site Scripting. JavaScript can be executed through many different HTML elements and event handlers.
+
+Some examples include:
+
+Using an image error event:
+
+```html
+<img src="invalid-image" onerror="alert('XSS')">
+```
+
+Using a mouse-over event:
+
+```html
+<a href="" onmouseover="alert('XSS')">Hover over me</a>
+```
+
+These alternative payloads demonstrate that blocking only the `<script>` tag does not eliminate XSS vulnerabilities.
+
+
+---
+
+ Key Takeaways
+
+ At Medium security, the original payload:
+
+```html
+<script>alert('XSS')</script>
+```
+
+was blocked because the application removed the `<script>` tags.
+
+ Inspecting the page source confirmed that the filtering occurred before the page was rendered.
+
+ The filter was case-sensitive, allowing the payload to bypass the protection by using mixed-case tags:
+
+```html
+<ScRiPt>alert('XSS')</ScRiPt>
+```
+
+ Filtering only specific keywords such as script is not an effective defense against XSS.
+
+ JavaScript can also execute through other HTML elements and event handlers, making proper input validation and output encoding essential for preventing Cross-Site Scripting vulnerabilities.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
 
