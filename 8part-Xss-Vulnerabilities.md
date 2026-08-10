@@ -2185,7 +2185,7 @@ The next stage of the lab is therefore to configure the authorized Metasploit li
 Successfully generated:
 
 ```text
-rev_https_at_80.exe
+rev_https_at_8080.exe
 ```
 
 Platform: Windows
