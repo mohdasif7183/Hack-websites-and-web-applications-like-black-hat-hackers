@@ -1235,3 +1235,77 @@ In a larger lab containing multiple hooked browsers, this section can help visua
  All testing should remain inside the authorized DVWA/Windows lab environment.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ Exercise: BeEF Social Engineering – Fake Login Page
+
+> Lab environment: Use only your isolated DVWA/BeEF/Windows VM lab and test accounts.
+
+ Objective
+
+In this exercise, we will use the BeEF Social Engineering module to demonstrate how a fake login interface can capture credentials entered by a test user.
+
+ Step 1 – Hook the Browser
+
+1. Start BeEF on Kali Linux.
+2. Hook the Windows test browser through the XSS vulnerability.
+3. Confirm the browser appears under Online Browsers.
+
+
+ Step 2 – Open Commands
+
+1. Select the hooked Windows browser.
+2. Go to Commands.
+3. Navigate to the Social Engineering category.
+4. Select the Pretty theft
+5. Locate the fake-login/social-engineering module demonstrated in the lecture.
+
+
+ Step 3 – Select the Test Login Page
+
+For the lab demonstration:
+
+1. Select the account/service template used by the module.
+2. It can be facebook page, youtube page, it has several options 
+3. Keep the default background/lightbox settings.
+4. Click Execute.
+
+<img width="1432" height="792" alt="Screenshot 2026-08-10 at 2 56 10 PM" src="https://github.com/user-attachments/assets/6f812df0-8207-4b3f-8b21-689facee5e85" />
+
+<img width="1435" height="784" alt="Screenshot 2026-08-10 at 2 57 55 PM" src="https://github.com/user-attachments/assets/2caadb99-8d50-410d-8896-a7f1cae2b4d6" />
+
+
+ Step 4 – Test from the Windows VM
+
+On the Windows test browser, the page should display a message indicating that the user's session has expired and requesting that they authenticate again.
+
+Test credentials:
+
+```text
+Username: testuser
+Password: TestPassword123!
+```
+
+> Use a dummy lab credential—not a real account password.
+
+<img width="1440" height="858" alt="Screenshot 2026-08-10 at 2 56 57 PM" src="https://github.com/user-attachments/assets/ba412609-82cf-4e27-b133-7c0ac7674078" />
+
+<img width="1439" height="875" alt="Screenshot 2026-08-10 at 2 58 10 PM" src="https://github.com/user-attachments/assets/708e92e4-602e-4345-b3a1-91e8d0ec44bd" />
+
+
+
+ Step 5 – Verify the Demonstration
+
+After submitting the dummy credentials, return to the BeEF interface and inspect the module output/log.
+
+You should see the test username and password captured by the demonstration module.
+
+<img width="1440" height="356" alt="Screenshot 2026-08-10 at 2 57 37 PM" src="https://github.com/user-attachments/assets/feb21fb6-c395-4e36-a62f-5df31e9a16eb" />
+
+<img width="1438" height="609" alt="Screenshot 2026-08-10 at 2 58 35 PM" src="https://github.com/user-attachments/assets/7365d760-67e6-4205-9fbc-b96d4c3a9b44" />
+
+
+ Expected Result
+
+The exercise demonstrates that an attacker-controlled page can imitate a legitimate login interface and collect credentials entered into that page. The credentials are not being obtained from the legitimate service itself; they are being entered into the attacker-controlled interface.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
